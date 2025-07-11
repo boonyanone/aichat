@@ -1,0 +1,22 @@
+{
+  "name": "ThaiAI - ผู้ช่วย AI ที่จ่ายตามใช้จริง",
+  "short_name": "ThaiAI",
+  "description": "เข้าถึง AI หลายค่ายในราคาที่เป็นธรรม จ่ายตามการใช้งานจริง",
+  "theme_color": "#3B82F6",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
