@@ -36,7 +36,15 @@ import {
   Award,
   TrendingUp,
   Eye,
-  Link
+  Link,
+  Plus,
+  X,
+  Mic,
+  Image,
+  Paperclip,
+  ArrowRight,
+  Cpu,
+  Wand2
 } from 'lucide-react';
 
 interface Message {
@@ -65,73 +73,123 @@ const ChatAI: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPersona, setSelectedPersona] = useState('');
-  const [showPersonaSelector, setShowPersonaSelector] = useState(true);
+  const [selectedPersona, setSelectedPersona] = useState('general');
+  const [selectedAI, setSelectedAI] = useState('auto');
+  const [showPersonaDropdown, setShowPersonaDropdown] = useState(false);
+  const [showAIDropdown, setShowAIDropdown] = useState(false);
   const [expandedSources, setExpandedSources] = useState<string[]>([]);
-  const [selectedPromptTemplate, setSelectedPromptTemplate] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const personas = [
     { 
+      id: 'general', 
+      name: 'ทั่วไป', 
+      icon: Users, 
+      color: 'text-gray-600',
+      description: 'การใช้งานทั่วไปและหลากหลาย'
+    },
+    { 
       id: 'student', 
       name: 'นักเรียน/นักศึกษา', 
       icon: GraduationCap, 
-      color: 'bg-blue-500',
+      color: 'text-blue-600',
       description: 'เหมาะสำหรับการเรียนรู้และทำงานวิจัย'
     },
     { 
       id: 'employee', 
       name: 'พนักงานบริษัท', 
       icon: Briefcase, 
-      color: 'bg-green-500',
+      color: 'text-green-600',
       description: 'เน้นการวิเคราะห์ธุรกิจและประสิทธิภาพ'
     },
     { 
       id: 'government', 
       name: 'ข้าราชการ', 
       icon: Shield, 
-      color: 'bg-purple-500',
+      color: 'text-purple-600',
       description: 'มุ่งเน้นนโยบายและการบริการสาธารณะ'
     },
     { 
       id: 'organization', 
       name: 'องค์กร/หน่วยงาน', 
       icon: Building, 
-      color: 'bg-orange-500',
+      color: 'text-orange-600',
       description: 'เหมาะสำหรับการจัดการองค์กรขนาดใหญ่'
-    },
-    { 
-      id: 'general', 
-      name: 'ทั่วไป', 
-      icon: Users, 
-      color: 'bg-gray-500',
-      description: 'การใช้งานทั่วไปและหลากหลาย'
     }
   ];
 
-  const promptTemplates = [
+  const aiModels = [
+    {
+      id: 'auto',
+      name: 'AI Router',
+      description: 'เลือกอัตโนมัติ',
+      icon: Wand2,
+      color: 'text-purple-600',
+      cost: 'ประหยัดสุด'
+    },
+    {
+      id: 'gpt4',
+      name: 'GPT-4',
+      description: 'วิเคราะห์ซับซ้อน',
+      icon: Brain,
+      color: 'text-green-600',
+      cost: '฿0.8/คำถาม'
+    },
+    {
+      id: 'claude',
+      name: 'Claude 3.5',
+      description: 'เขียนและสรุป',
+      icon: FileText,
+      color: 'text-blue-600',
+      cost: '฿0.6/คำถาม'
+    },
+    {
+      id: 'gemini',
+      name: 'Gemini Pro',
+      description: 'ความคิดสร้างสรรค์',
+      icon: Sparkles,
+      color: 'text-orange-600',
+      cost: '฿0.4/คำถาม'
+    },
+    {
+      id: 'perplexity',
+      name: 'Perplexity',
+      description: 'ค้นหาข้อมูล',
+      icon: Search,
+      color: 'text-teal-600',
+      cost: '฿0.3/คำถาม'
+    }
+  ];
+
+  const quickPrompts = [
     {
       category: 'วิจัยและการศึกษา',
-      templates: [
-        'วิเคราะห์และสรุปงานวิจัยเกี่ยวกับ [หัวข้อ] พร้อมแหล่งอ้างอิงที่น่าเชื่อถือ',
-        'เปรียบเทียบทฤษฎีต่างๆ เกี่ยวกับ [หัวข้อ] และให้ตัวอย่างการประยุกต์ใช้',
-        'ค้นหาข้อมูลล่าสุดเกี่ยวกับ [หัวข้อ] จากแหล่งวิชาการที่เชื่อถือได้'
+      icon: BookOpen,
+      color: 'bg-blue-50 text-blue-700 border-blue-200',
+      prompts: [
+        'วิเคราะห์และสรุปงานวิจัยเกี่ยวกับ [หัวข้อ]',
+        'เปรียบเทียบทฤษฎีต่างๆ เกี่ยวกับ [หัวข้อ]',
+        'ค้นหาข้อมูลล่าสุดเกี่ยวกับ [หัวข้อ]'
       ]
     },
     {
       category: 'ธุรกิจและการตลาด',
-      templates: [
-        'วิเคราะห์แนวโน้มตลาดและคู่แข่งในอุตสาหกรรม [ระบุอุตสาหกรรม]',
-        'สร้างกลยุทธ์การตลาดดิจิทัลสำหรับ [ประเภทธุรกิจ]',
-        'วิเคราะห์ SWOT และให้คำแนะนำเชิงกลยุทธ์สำหรับ [บริษัท/โครงการ]'
+      icon: TrendingUp,
+      color: 'bg-green-50 text-green-700 border-green-200',
+      prompts: [
+        'วิเคราะห์แนวโน้มตลาดในอุตสาหกรรม [ระบุ]',
+        'สร้างกลยุทธ์การตลาดดิจิทัลสำหรับ [ธุรกิจ]',
+        'วิเคราะห์ SWOT สำหรับ [บริษัท/โครงการ]'
       ]
     },
     {
       category: 'นโยบายและการบริหาร',
-      templates: [
-        'วิเคราะห์ผลกระทบของนโยบาย [ระบุนโยบาย] ต่อสังคมไทย',
-        'เปรียบเทียบระบบการบริหารจัดการของประเทศต่างๆ ในเรื่อง [หัวข้อ]',
-        'ประเมินประสิทธิภาพของโครงการ [ระบุโครงการ] และข้อเสนอแนะ'
+      icon: Shield,
+      color: 'bg-purple-50 text-purple-700 border-purple-200',
+      prompts: [
+        'วิเคราะห์ผลกระทบของนโยบาย [ระบุ]',
+        'เปรียบเทียบระบบการบริหารของประเทศต่างๆ',
+        'ประเมินประสิทธิภาพของโครงการ [ระบุ]'
       ]
     }
   ];
@@ -188,7 +246,6 @@ const ChatAI: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
-    setShowPersonaSelector(false);
 
     // Simulate AI response
     setTimeout(() => {
@@ -205,14 +262,14 @@ const ChatAI: React.FC = () => {
 3. **ข้อท้าทายที่สำคัญ** คือการเตรียมความพร้อมของบุคลากรและโครงสร้างพื้นฐาน
 
 **คำแนะนำเชิงปฏิบัติ:**
-- เริ่มต้นด้วยการศึกษาพื้นฐานและทำความเข้าใจเทคโนโลジี
+- เริ่มต้นด้วยการศึกษาพื้นฐานและทำความเข้าใจเทคโนโลจี
 - มุ่งเน้นการพัฒนาทักษะที่เสริมกับ AI แทนการแข่งขัน
 - ติดตามแนวโน้มและการเปลี่ยนแปลงอย่างต่อเนื่อง
 
 ข้อมูลนี้ได้มาจากการวิเคราะห์แหล่งข้อมูลที่เชื่อถือได้และเป็นปัจจุบัน`,
         timestamp: new Date(),
         sources: mockSources,
-        aiModel: 'Claude 3.5 Sonnet',
+        aiModel: selectedAI === 'auto' ? 'Claude 3.5 Sonnet' : aiModels.find(ai => ai.id === selectedAI)?.name,
         cost: 0.45,
         followUpQuestions: [
           'มีตัวอย่างการใช้งาน AI ในการศึกษาไทยอย่างเป็นรูปธรรมหรือไม่?',
@@ -228,7 +285,6 @@ const ChatAI: React.FC = () => {
 
   const handlePromptSelect = (template: string) => {
     setInputValue(template);
-    setSelectedPromptTemplate(template);
   };
 
   const toggleSourceExpansion = (sourceId: string) => {
@@ -257,19 +313,24 @@ const ChatAI: React.FC = () => {
     }
   };
 
+  const selectedPersonaData = personas.find(p => p.id === selectedPersona);
+  const selectedAIData = aiModels.find(ai => ai.id === selectedAI);
+
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-white">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="border-b border-gray-200 px-6 py-4 bg-white">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-              <Brain className="h-7 w-7 mr-3 text-blue-600" />
-              Chat AI
-            </h1>
-            <p className="text-gray-600 text-sm mt-1">ค้นหาและวิเคราะห์ข้อมูลด้วย AI หลายค่าย</p>
-          </div>
           <div className="flex items-center space-x-3">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 w-8 h-8 rounded-lg flex items-center justify-center">
+              <Brain className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">Chat AI</h1>
+              <p className="text-sm text-gray-500">ค้นหาและวิเคราะห์ข้อมูลด้วย AI</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
             <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
               <Settings className="h-5 w-5" />
             </button>
@@ -280,424 +341,416 @@ const ChatAI: React.FC = () => {
         </div>
       </div>
 
-      {/* Chat Container */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-            {messages.length === 0 && (
-              <div className="text-center py-12">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="h-8 w-8 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">เริ่มต้นการสนทนากับ AI</h2>
-                <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                  ค้นหาข้อมูล วิเคราะห์เนื้อหา และรับคำแนะนำจาก AI ที่เหมาะสมกับบทบาทของคุณ
-                </p>
-
-                {/* Persona Selector */}
-                {showPersonaSelector && (
-                  <div className="max-w-4xl mx-auto mb-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">เลือกบทบาทของคุณ</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {personas.map((persona) => {
-                        const Icon = persona.icon;
-                        return (
-                          <button
-                            key={persona.id}
-                            onClick={() => setSelectedPersona(persona.id)}
-                            className={`p-4 rounded-xl border-2 transition-all text-left ${
-                              selectedPersona === persona.id
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-200 hover:border-gray-300 bg-white'
-                            }`}
-                          >
-                            <div className="flex items-center space-x-3 mb-2">
-                              <div className={`${persona.color} p-2 rounded-lg`}>
-                                <Icon className="h-5 w-5 text-white" />
-                              </div>
-                              <span className="font-medium text-gray-900">{persona.name}</span>
-                            </div>
-                            <p className="text-sm text-gray-600">{persona.description}</p>
-                          </button>
-                        );
-                      })}
-                    </div>
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto">
+          {messages.length === 0 ? (
+            /* Welcome Screen */
+            <div className="h-full flex flex-col">
+              {/* Hero Section */}
+              <div className="flex-1 flex items-center justify-center px-6 py-12">
+                <div className="max-w-4xl mx-auto text-center">
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Sparkles className="h-8 w-8 text-white" />
                   </div>
-                )}
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                    ถามอะไรก็ได้กับ AI
+                  </h2>
+                  <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                    ค้นหาข้อมูล วิเคราะห์เนื้อหา และรับคำแนะนำจาก AI ที่เหมาะสมกับบทบาทของคุณ
+                  </p>
 
-                {/* Prompt Templates */}
-                {selectedPersona && (
-                  <div className="max-w-4xl mx-auto">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">เทมเพลตคำถามแนะนำ</h3>
-                    <div className="space-y-4">
-                      {promptTemplates.map((category, index) => (
+                  {/* Quick Prompts */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    {quickPrompts.map((category, index) => {
+                      const Icon = category.icon;
+                      return (
                         <div key={index} className="text-left">
-                          <h4 className="font-medium text-gray-800 mb-2 flex items-center">
-                            <Target className="h-4 w-4 mr-2 text-blue-600" />
-                            {category.category}
-                          </h4>
-                          <div className="grid gap-2">
-                            {category.templates.map((template, templateIndex) => (
+                          <div className="flex items-center space-x-2 mb-3">
+                            <div className={`p-2 rounded-lg border ${category.color}`}>
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <h3 className="font-medium text-gray-900">{category.category}</h3>
+                          </div>
+                          <div className="space-y-2">
+                            {category.prompts.map((prompt, promptIndex) => (
                               <button
-                                key={templateIndex}
-                                onClick={() => handlePromptSelect(template)}
-                                className="p-3 text-sm text-left bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                                key={promptIndex}
+                                onClick={() => handlePromptSelect(prompt)}
+                                className="block w-full text-left p-3 text-sm bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 hover:border-gray-300"
                               >
-                                {template}
+                                {prompt}
                               </button>
                             ))}
                           </div>
                         </div>
-                      ))}
+                      );
+                    })}
+                  </div>
+
+                  {/* Features */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                    <div className="flex items-center space-x-2">
+                      <Link className="h-4 w-4 text-blue-500" />
+                      <span>แหล่งอ้างอิงครบถ้วน</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Zap className="h-4 w-4 text-yellow-500" />
+                      <span>AI Router อัจฉริยะ</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Shield className="h-4 w-4 text-green-500" />
+                      <span>ตรวจสอบความถูกต้อง</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Users className="h-4 w-4 text-purple-500" />
+                      <span>แชร์ให้ทีมได้</span>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
-            )}
-
-            {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-4xl w-full ${message.type === 'user' ? 'flex justify-end' : ''}`}>
-                  <div className={`flex space-x-3 ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                    {/* Avatar */}
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                      message.type === 'user' ? 'bg-blue-600' : 'bg-gradient-to-r from-purple-500 to-blue-600'
-                    }`}>
-                      {message.type === 'user' ? (
-                        <User className="h-5 w-5 text-white" />
-                      ) : (
-                        <Bot className="h-5 w-5 text-white" />
-                      )}
-                    </div>
-
-                    {/* Message Content */}
-                    <div className={`flex-1 ${message.type === 'user' ? 'text-right' : ''}`}>
-                      <div className={`inline-block p-4 rounded-2xl ${
-                        message.type === 'user' 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-white border border-gray-200'
+            </div>
+          ) : (
+            /* Messages List */
+            <div className="px-6 py-4 space-y-6">
+              {messages.map((message) => (
+                <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-4xl w-full ${message.type === 'user' ? 'flex justify-end' : ''}`}>
+                    <div className={`flex space-x-3 ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                      {/* Avatar */}
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                        message.type === 'user' ? 'bg-blue-600' : 'bg-gradient-to-r from-purple-500 to-blue-600'
                       }`}>
-                        <div className="whitespace-pre-wrap">{message.content}</div>
-                        
-                        {/* AI Message Metadata */}
-                        {message.type === 'ai' && (
-                          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                            <div className="flex items-center space-x-4">
-                              <span className="flex items-center">
-                                <Zap className="h-3 w-3 mr-1" />
-                                {message.aiModel}
-                              </span>
-                              <span className="flex items-center">
-                                <Clock className="h-3 w-3 mr-1" />
-                                {message.timestamp.toLocaleTimeString('th-TH')}
-                              </span>
-                              <span className="flex items-center">
-                                <Star className="h-3 w-3 mr-1" />
-                                ฿{message.cost}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <button className="p-1 hover:bg-gray-100 rounded">
-                                <Copy className="h-3 w-3" />
-                              </button>
-                              <button className="p-1 hover:bg-gray-100 rounded">
-                                <Share2 className="h-3 w-3" />
-                              </button>
-                              <button className="p-1 hover:bg-gray-100 rounded">
-                                <ThumbsUp className="h-3 w-3" />
-                              </button>
-                            </div>
-                          </div>
+                        {message.type === 'user' ? (
+                          <User className="h-5 w-5 text-white" />
+                        ) : (
+                          <Bot className="h-5 w-5 text-white" />
                         )}
                       </div>
 
-                      {/* Sources */}
-                      {message.sources && message.sources.length > 0 && (
-                        <div className="mt-4 space-y-2">
-                          <h4 className="text-sm font-medium text-gray-700 flex items-center">
-                            <Link className="h-4 w-4 mr-2" />
-                            แหล่งอ้างอิง ({message.sources.length})
-                          </h4>
-                          <div className="grid gap-2">
-                            {message.sources.map((source) => (
-                              <div key={source.id} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-2 mb-1">
-                                      <div className={`p-1 rounded ${getSourceTypeColor(source.type)}`}>
-                                        {getSourceTypeIcon(source.type)}
-                                      </div>
-                                      <span className="text-xs font-medium text-gray-600">{source.domain}</span>
-                                      <div className="flex items-center">
-                                        <div className="w-12 bg-gray-200 rounded-full h-1">
-                                          <div 
-                                            className="bg-green-500 h-1 rounded-full" 
-                                            style={{ width: `${source.relevance}%` }}
-                                          />
+                      {/* Message Content */}
+                      <div className={`flex-1 ${message.type === 'user' ? 'text-right' : ''}`}>
+                        <div className={`inline-block p-4 rounded-2xl max-w-full ${
+                          message.type === 'user' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-50 border border-gray-200'
+                        }`}>
+                          <div className="whitespace-pre-wrap">{message.content}</div>
+                          
+                          {/* AI Message Metadata */}
+                          {message.type === 'ai' && (
+                            <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
+                              <div className="flex items-center space-x-4">
+                                <span className="flex items-center">
+                                  <Cpu className="h-3 w-3 mr-1" />
+                                  {message.aiModel}
+                                </span>
+                                <span className="flex items-center">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  {message.timestamp.toLocaleTimeString('th-TH')}
+                                </span>
+                                <span className="flex items-center">
+                                  <Star className="h-3 w-3 mr-1" />
+                                  ฿{message.cost}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <button className="p-1 hover:bg-gray-200 rounded">
+                                  <Copy className="h-3 w-3" />
+                                </button>
+                                <button className="p-1 hover:bg-gray-200 rounded">
+                                  <Share2 className="h-3 w-3" />
+                                </button>
+                                <button className="p-1 hover:bg-gray-200 rounded">
+                                  <ThumbsUp className="h-3 w-3" />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Sources */}
+                        {message.sources && message.sources.length > 0 && (
+                          <div className="mt-4 space-y-2">
+                            <h4 className="text-sm font-medium text-gray-700 flex items-center">
+                              <Link className="h-4 w-4 mr-2" />
+                              แหล่งอ้างอิง ({message.sources.length})
+                            </h4>
+                            <div className="grid gap-2">
+                              {message.sources.map((source) => (
+                                <div key={source.id} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center space-x-2 mb-1">
+                                        <div className={`p-1 rounded ${getSourceTypeColor(source.type)}`}>
+                                          {getSourceTypeIcon(source.type)}
                                         </div>
-                                        <span className="text-xs text-gray-500 ml-1">{source.relevance}%</span>
+                                        <span className="text-xs font-medium text-gray-600">{source.domain}</span>
+                                        <div className="flex items-center">
+                                          <div className="w-12 bg-gray-200 rounded-full h-1">
+                                            <div 
+                                              className="bg-green-500 h-1 rounded-full" 
+                                              style={{ width: `${source.relevance}%` }}
+                                            />
+                                          </div>
+                                          <span className="text-xs text-gray-500 ml-1">{source.relevance}%</span>
+                                        </div>
                                       </div>
+                                      <h5 className="text-sm font-medium text-gray-900 mb-1">{source.title}</h5>
+                                      <p className="text-xs text-gray-600 mb-2">{source.snippet}</p>
+                                      <button
+                                        onClick={() => toggleSourceExpansion(source.id)}
+                                        className="text-xs text-blue-600 hover:text-blue-700 flex items-center"
+                                      >
+                                        {expandedSources.includes(source.id) ? (
+                                          <>ซ่อน <ChevronUp className="h-3 w-3 ml-1" /></>
+                                        ) : (
+                                          <>ดูเพิ่มเติม <ChevronDown className="h-3 w-3 ml-1" /></>
+                                        )}
+                                      </button>
                                     </div>
-                                    <h5 className="text-sm font-medium text-gray-900 mb-1">{source.title}</h5>
-                                    <p className="text-xs text-gray-600 mb-2">{source.snippet}</p>
-                                    <button
-                                      onClick={() => toggleSourceExpansion(source.id)}
-                                      className="text-xs text-blue-600 hover:text-blue-700 flex items-center"
-                                    >
-                                      {expandedSources.includes(source.id) ? (
-                                        <>ซ่อน <ChevronUp className="h-3 w-3 ml-1" /></>
-                                      ) : (
-                                        <>ดูเพิ่มเติม <ChevronDown className="h-3 w-3 ml-1" /></>
-                                      )}
+                                    <button className="ml-2 p-1 text-gray-400 hover:text-gray-600">
+                                      <ExternalLink className="h-4 w-4" />
                                     </button>
                                   </div>
-                                  <button className="ml-2 p-1 text-gray-400 hover:text-gray-600">
-                                    <ExternalLink className="h-4 w-4" />
-                                  </button>
-                                </div>
-                                
-                                {expandedSources.includes(source.id) && (
-                                  <div className="mt-3 pt-3 border-t border-gray-200">
-                                    <p className="text-xs text-gray-600 mb-2">
-                                      แหล่งข้อมูลนี้มีความเชื่อถือได้สูงและเป็นข้อมูลที่ทันสมัย 
-                                      เหมาะสำหรับการอ้างอิงในงานวิชาการและการวิจัย
-                                    </p>
-                                    <div className="flex items-center space-x-2 text-xs text-gray-500">
-                                      <Eye className="h-3 w-3" />
-                                      <span>ดูแล้ว 1,234 ครั้ง</span>
-                                      <span>•</span>
-                                      <span>อัปเดตล่าสุด: 2 วันที่แล้ว</span>
+                                  
+                                  {expandedSources.includes(source.id) && (
+                                    <div className="mt-3 pt-3 border-t border-gray-200">
+                                      <p className="text-xs text-gray-600 mb-2">
+                                        แหล่งข้อมูลนี้มีความเชื่อถือได้สูงและเป็นข้อมูลที่ทันสมัย 
+                                        เหมาะสำหรับการอ้างอิงในงานวิชาการและการวิจัย
+                                      </p>
+                                      <div className="flex items-center space-x-2 text-xs text-gray-500">
+                                        <Eye className="h-3 w-3" />
+                                        <span>ดูแล้ว 1,234 ครั้ง</span>
+                                        <span>•</span>
+                                        <span>อัปเดตล่าสุด: 2 วันที่แล้ว</span>
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {/* Follow-up Questions */}
-                      {message.followUpQuestions && message.followUpQuestions.length > 0 && (
-                        <div className="mt-4">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                            <Lightbulb className="h-4 w-4 mr-2" />
-                            คำถามที่เกี่ยวข้อง
-                          </h4>
-                          <div className="space-y-2">
-                            {message.followUpQuestions.map((question, index) => (
-                              <button
-                                key={index}
-                                onClick={() => setInputValue(question)}
-                                className="block w-full text-left p-3 text-sm bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
-                              >
-                                {question}
-                              </button>
-                            ))}
+                        {/* Follow-up Questions */}
+                        {message.followUpQuestions && message.followUpQuestions.length > 0 && (
+                          <div className="mt-4">
+                            <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                              <Lightbulb className="h-4 w-4 mr-2" />
+                              คำถามที่เกี่ยวข้อง
+                            </h4>
+                            <div className="space-y-2">
+                              {message.followUpQuestions.map((question, index) => (
+                                <button
+                                  key={index}
+                                  onClick={() => setInputValue(question)}
+                                  className="block w-full text-left p-3 text-sm bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                                >
+                                  {question}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {/* Export Options */}
-                      {message.type === 'ai' && (
-                        <div className="mt-4 flex items-center space-x-2">
-                          <button className="flex items-center px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors">
-                            <FileText className="h-3 w-3 mr-1" />
-                            ส่งออกเป็น Word
-                          </button>
-                          <button className="flex items-center px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
-                            <Share2 className="h-3 w-3 mr-1" />
-                            แชร์ให้ทีม
-                          </button>
-                          <button className="flex items-center px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors">
-                            <Shield className="h-3 w-3 mr-1" />
-                            ตรวจสอบด้วย Typhoon
-                          </button>
-                        </div>
-                      )}
+                        {/* Export Options */}
+                        {message.type === 'ai' && (
+                          <div className="mt-4 flex items-center space-x-2">
+                            <button className="flex items-center px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors">
+                              <FileText className="h-3 w-3 mr-1" />
+                              ส่งออกเป็น Word
+                            </button>
+                            <button className="flex items-center px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">
+                              <Share2 className="h-3 w-3 mr-1" />
+                              แชร์ให้ทีม
+                            </button>
+                            <button className="flex items-center px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors">
+                              <Shield className="h-3 w-3 mr-1" />
+                              ตรวจสอบด้วย Typhoon
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="flex space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
-                    <Bot className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="bg-white border border-gray-200 rounded-2xl p-4">
-                    <div className="flex items-center space-x-2">
-                      <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
-                      <span className="text-gray-600">กำลังค้นหาและวิเคราะห์ข้อมูล...</span>
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="flex space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
+                      <Bot className="h-5 w-5 text-white" />
                     </div>
-                    <div className="mt-2 text-xs text-gray-500">
-                      ระบบกำลังเลือก AI ที่เหมาะสมสำหรับคำถามของคุณ
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                      <div className="flex items-center space-x-2">
+                        <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
+                        <span className="text-gray-600">กำลังค้นหาและวิเคราะห์ข้อมูล...</span>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-500">
+                        ระบบกำลังเลือก AI ที่เหมาะสมสำหรับคำถามของคุณ
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input Area */}
-          <div className="border-t border-gray-200 bg-white px-6 py-4">
-            <div className="max-w-4xl mx-auto">
-              {selectedPersona && (
-                <div className="mb-3 flex items-center space-x-2">
-                  <div className={`${personas.find(p => p.id === selectedPersona)?.color} p-1 rounded`}>
-                    {React.createElement(personas.find(p => p.id === selectedPersona)?.icon || Users, { 
-                      className: "h-4 w-4 text-white" 
-                    })}
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    ถามในฐานะ: {personas.find(p => p.id === selectedPersona)?.name}
-                  </span>
-                  <button 
-                    onClick={() => setSelectedPersona('')}
-                    className="text-xs text-blue-600 hover:text-blue-700"
-                  >
-                    เปลี่ยน
-                  </button>
                 </div>
               )}
-              
-              <div className="flex items-end space-x-3">
-                <div className="flex-1 relative">
-                  <textarea
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    placeholder={selectedPersona ? "พิมพ์คำถามของคุณ..." : "เลือกบทบาทก่อนเริ่มสนทนา"}
-                    disabled={!selectedPersona}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    rows={3}
-                  />
-                  <div className="absolute bottom-2 right-2 flex items-center space-x-2">
-                    <span className="text-xs text-gray-400">
-                      {inputValue.length}/2000
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || !selectedPersona || isLoading}
-                  className="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Send className="h-5 w-5" />
-                </button>
-              </div>
-              
-              <div className="mt-2 text-xs text-gray-500 text-center">
-                ระบบจะเลือก AI ที่เหมาะสมและคิดค่าใช้จ่ายตามการใช้งานจริง
-              </div>
+
+              <div ref={messagesEndRef} />
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Sidebar - AI Models & Tips */}
-        <div className="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto">
-          <div className="space-y-6">
-            {/* AI Router Status */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
-              <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
-                <Zap className="h-5 w-5 mr-2 text-blue-600" />
-                AI Router
-              </h3>
-              <p className="text-sm text-gray-600 mb-3">
-                ระบบจะเลือก AI ที่เหมาะสมกับคำถามของคุณโดยอัตโนมัติ
-              </p>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span>GPT-4</span>
-                  <span className="text-green-600">เหมาะสำหรับการวิเคราะห์</span>
+        {/* Input Area */}
+        <div className="border-t border-gray-200 bg-white p-6">
+          <div className="max-w-4xl mx-auto">
+            {/* Input Container */}
+            <div className="relative">
+              {/* Top Controls */}
+              <div className="flex items-center justify-between mb-3">
+                {/* Persona Selector */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowPersonaDropdown(!showPersonaDropdown)}
+                    className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors"
+                  >
+                    {selectedPersonaData && (
+                      <>
+                        <selectedPersonaData.icon className={`h-4 w-4 ${selectedPersonaData.color}`} />
+                        <span className="text-gray-700">{selectedPersonaData.name}</span>
+                      </>
+                    )}
+                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                  </button>
+
+                  {showPersonaDropdown && (
+                    <div className="absolute bottom-full mb-2 left-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-64">
+                      <div className="p-2">
+                        <div className="text-xs font-medium text-gray-500 px-2 py-1 mb-1">เลือกบทบาทของคุณ</div>
+                        {personas.map((persona) => {
+                          const Icon = persona.icon;
+                          return (
+                            <button
+                              key={persona.id}
+                              onClick={() => {
+                                setSelectedPersona(persona.id);
+                                setShowPersonaDropdown(false);
+                              }}
+                              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left hover:bg-gray-50 transition-colors ${
+                                selectedPersona === persona.id ? 'bg-blue-50 border border-blue-200' : ''
+                              }`}
+                            >
+                              <Icon className={`h-4 w-4 ${persona.color}`} />
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-gray-900">{persona.name}</div>
+                                <div className="text-xs text-gray-500">{persona.description}</div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span>Claude 3.5</span>
-                  <span className="text-blue-600">เหมาะสำหรับการเขียน</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span>Perplexity</span>
-                  <span className="text-purple-600">เหมาะสำหรับการค้นหา</span>
+
+                {/* AI Model Selector */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowAIDropdown(!showAIDropdown)}
+                    className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors"
+                  >
+                    {selectedAIData && (
+                      <>
+                        <selectedAIData.icon className={`h-4 w-4 ${selectedAIData.color}`} />
+                        <span className="text-gray-700">{selectedAIData.name}</span>
+                        <span className="text-xs text-gray-500">({selectedAIData.cost})</span>
+                      </>
+                    )}
+                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                  </button>
+
+                  {showAIDropdown && (
+                    <div className="absolute bottom-full mb-2 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-72">
+                      <div className="p-2">
+                        <div className="text-xs font-medium text-gray-500 px-2 py-1 mb-1">เลือก AI Model</div>
+                        {aiModels.map((ai) => {
+                          const Icon = ai.icon;
+                          return (
+                            <button
+                              key={ai.id}
+                              onClick={() => {
+                                setSelectedAI(ai.id);
+                                setShowAIDropdown(false);
+                              }}
+                              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left hover:bg-gray-50 transition-colors ${
+                                selectedAI === ai.id ? 'bg-blue-50 border border-blue-200' : ''
+                              }`}
+                            >
+                              <Icon className={`h-4 w-4 ${ai.color}`} />
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium text-gray-900">{ai.name}</span>
+                                  <span className="text-xs text-gray-500">{ai.cost}</span>
+                                </div>
+                                <div className="text-xs text-gray-500">{ai.description}</div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
 
-            {/* Usage Stats */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">สถิติการใช้งานวันนี้</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">คำถามที่ถาม</span>
-                  <span className="font-medium">12</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">เครดิตที่ใช้</span>
-                  <span className="font-medium text-orange-600">฿2.45</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">ประหยัดได้</span>
-                  <span className="font-medium text-green-600">฿1.20</span>
+              {/* Main Input */}
+              <div className="relative">
+                <div className="flex items-end space-x-3">
+                  <div className="flex-1 relative">
+                    <textarea
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      placeholder="ถามอะไรก็ได้..."
+                      className="w-full px-4 py-3 pr-32 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500"
+                      rows={1}
+                      style={{ minHeight: '48px', maxHeight: '120px' }}
+                    />
+                    
+                    {/* Input Actions */}
+                    <div className="absolute right-2 bottom-2 flex items-center space-x-1">
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                        <Paperclip className="h-4 w-4" />
+                      </button>
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                        <Image className="h-4 w-4" />
+                      </button>
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                        <Mic className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isLoading}
+                    className="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                  >
+                    <Send className="h-5 w-5" />
+                  </button>
                 </div>
               </div>
-            </div>
 
-            {/* Tips */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <Award className="h-5 w-5 mr-2 text-yellow-500" />
-                เทคนิคการใช้งาน
-              </h3>
-              <div className="space-y-3">
-                <div className="p-3 bg-yellow-50 rounded-lg">
-                  <p className="text-sm text-gray-700">
-                    💡 ระบุบริบทให้ชัดเจนจะได้คำตอบที่แม่นยำมากขึ้น
-                  </p>
-                </div>
-                <div className="p-3 bg-green-50 rounded-lg">
-                  <p className="text-sm text-gray-700">
-                    🎯 ใช้เทมเพลตคำถามเพื่อประหยัดเวลาและเครดิต
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-gray-700">
-                    📚 ตรวจสอบแหล่งอ้างอิงก่อนนำไปใช้งาน
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">การดำเนินการด่วน</h3>
-              <div className="space-y-2">
-                <button className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className="flex items-center">
-                    <FileText className="h-4 w-4 mr-3 text-blue-600" />
-                    <span className="text-sm">สร้างรายงานใหม่</span>
-                  </div>
-                </button>
-                <button className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className="flex items-center">
-                    <Users className="h-4 w-4 mr-3 text-green-600" />
-                    <span className="text-sm">เชิญทีมเข้าร่วม</span>
-                  </div>
-                </button>
-                <button className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className="flex items-center">
-                    <Download className="h-4 w-4 mr-3 text-purple-600" />
-                    <span className="text-sm">ดาวน์โหลดประวัติ</span>
-                  </div>
-                </button>
+              {/* Footer Info */}
+              <div className="mt-2 text-xs text-gray-500 text-center">
+                ระบบจะเลือก AI ที่เหมาะสมและคิดค่าใช้จ่ายตามการใช้งานจริง
               </div>
             </div>
           </div>
