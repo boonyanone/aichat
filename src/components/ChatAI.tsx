@@ -27,7 +27,13 @@ import {
   Users,
   MessageSquare,
   Clock,
-  DollarSign
+  ExternalLink,
+  ArrowRight,
+  CheckCircle,
+  AlertCircle,
+  Star,
+  Bookmark,
+  MoreHorizontal
 } from 'lucide-react';
 
 interface Message {
@@ -41,7 +47,10 @@ interface Message {
     title: string;
     url: string;
     relevance: number;
+    credibility: number;
+    snippet: string;
   }>;
+  followUpQuestions?: string[];
 }
 
 interface ChatHistory {
@@ -51,6 +60,7 @@ interface ChatHistory {
   aiModel: string;
   totalCost: number;
   lastUpdated: Date;
+  messageCount: number;
 }
 
 const aiModels = [
@@ -188,7 +198,8 @@ const mockChatHistory: ChatHistory[] = [
     messages: [],
     aiModel: 'GPT-4',
     totalCost: 0.15,
-    lastUpdated: new Date()
+    lastUpdated: new Date(),
+    messageCount: 8
   },
   {
     id: '2',
@@ -196,7 +207,8 @@ const mockChatHistory: ChatHistory[] = [
     messages: [],
     aiModel: 'Claude',
     totalCost: 0.08,
-    lastUpdated: new Date(Date.now() - 86400000)
+    lastUpdated: new Date(Date.now() - 86400000),
+    messageCount: 5
   },
   {
     id: '3',
@@ -204,7 +216,8 @@ const mockChatHistory: ChatHistory[] = [
     messages: [],
     aiModel: 'Gemini',
     totalCost: 0.05,
-    lastUpdated: new Date(Date.now() - 172800000)
+    lastUpdated: new Date(Date.now() - 172800000),
+    messageCount: 3
   }
 ];
 
@@ -237,16 +250,57 @@ export default function ChatAI() {
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `ตอบคำถาม: "${inputValue}" โดยใช้ ${selectedAI.name}\n\nนี่คือคำตอบที่ครอบคลุมและมีประโยชน์สำหรับคำถามของคุณ ซึ่งได้รับการวิเคราะห์และประมวลผลโดย AI ที่เหมาะสมที่สุด\n\n**จุดสำคัญ:**\n• ข้อมูลที่ถูกต้องและเป็นปัจจุบัน\n• การวิเคราะห์เชิงลึก\n• คำแนะนำที่เป็นประโยชน์\n\n**สรุป:**\nคำตอบนี้ได้รับการปรับแต่งให้เหมาะสมกับบทบาท "${selectedPersona.name}" และใช้ความสามารถของ ${selectedAI.name} ในการให้คำตอบที่มีคุณภาพสูง`,
+        content: `ตอบคำถาม: "${inputValue}" โดยใช้ ${selectedAI.name}
+
+นี่คือคำตอบที่ครอบคลุมและมีประโยชน์สำหรับคำถามของคุณ ซึ่งได้รับการวิเคราะห์และประมวลผลโดย AI ที่เหมาะสมที่สุด
+
+**จุดสำคัญ:**
+• ข้อมูลที่ถูกต้องและเป็นปัจจุบัน
+• การวิเคราะห์เชิงลึกจากแหล่งข้อมูลที่น่าเชื่อถือ
+• คำแนะนำที่เป็นประโยชน์และนำไปใช้ได้จริง
+
+**สรุป:**
+คำตอบนี้ได้รับการปรับแต่งให้เหมาะสมกับบทบาท "${selectedPersona.name}" และใช้ความสามารถของ ${selectedAI.name} ในการให้คำตอบที่มีคุณภาพสูง`,
         isUser: false,
         timestamp: new Date(),
         aiModel: selectedAI.name,
         cost: selectedAI.cost,
-        sources: selectedAI.id === 'perplexity' ? [
-          { title: 'Wikipedia', url: 'https://wikipedia.org', relevance: 95 },
-          { title: 'Academic Paper', url: 'https://example.com', relevance: 88 },
-          { title: 'News Article', url: 'https://news.com', relevance: 82 }
-        ] : undefined
+        sources: [
+          { 
+            title: 'Wikipedia - ข้อมูลพื้นฐาน', 
+            url: 'https://th.wikipedia.org', 
+            relevance: 95,
+            credibility: 88,
+            snippet: 'ข้อมูลพื้นฐานที่ครอบคลุมและได้รับการตรวจสอบจากชุมชน'
+          },
+          { 
+            title: 'งานวิจัยวิชาการ - Journal', 
+            url: 'https://academic-journal.com', 
+            relevance: 92,
+            credibility: 95,
+            snippet: 'งานวิจัยที่ผ่านการตรวจสอบโดยผู้เชี่ยวชาญ (Peer Review)'
+          },
+          { 
+            title: 'ข่าวสารล่าสุด - News Portal', 
+            url: 'https://news-portal.com', 
+            relevance: 85,
+            credibility: 78,
+            snippet: 'ข้อมูลข่าวสารที่เป็นปัจจุบันและมีการอัปเดตสม่ำเสมอ'
+          },
+          { 
+            title: 'รายงานของหน่วยงานราชการ', 
+            url: 'https://government-report.go.th', 
+            relevance: 88,
+            credibility: 92,
+            snippet: 'รายงานทางการจากหน่วยงานราชการที่เชื่อถือได้'
+          }
+        ],
+        followUpQuestions: [
+          'ขยายความเพิ่มเติมเกี่ยวกับหัวข้อนี้',
+          'มีตัวอย่างการใช้งานจริงหรือไม่?',
+          'แนวโน้มในอนาคตจะเป็นอย่างไร?',
+          'มีข้อควรระวังหรือข้อจำกัดอะไรบ้าง?'
+        ]
       };
 
       setMessages(prev => [...prev, aiMessage]);
@@ -268,14 +322,33 @@ export default function ChatAI() {
     }
   };
 
+  const handleFollowUpClick = (question: string) => {
+    setInputValue(question);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
   const handleExport = (type: 'word' | 'pdf' | 'link' | 'template') => {
-    // Simulate export functionality
     alert(`ส่งออกเป็น ${type} สำเร็จ!`);
   };
 
   const handleShare = () => {
-    // Simulate share functionality
     alert('แชร์ให้ทีมสำเร็จ!');
+  };
+
+  const getCredibilityColor = (credibility: number) => {
+    if (credibility >= 90) return 'text-green-600 bg-green-50';
+    if (credibility >= 80) return 'text-blue-600 bg-blue-50';
+    if (credibility >= 70) return 'text-yellow-600 bg-yellow-50';
+    return 'text-red-600 bg-red-50';
+  };
+
+  const getCredibilityLabel = (credibility: number) => {
+    if (credibility >= 90) return 'น่าเชื่อถือมาก';
+    if (credibility >= 80) return 'น่าเชื่อถือ';
+    if (credibility >= 70) return 'น่าเชื่อถือปานกลาง';
+    return 'ควรตรวจสอบเพิ่มเติม';
   };
 
   const filteredHistory = mockChatHistory.filter(chat =>
@@ -309,30 +382,6 @@ export default function ChatAI() {
     <div className="flex h-screen bg-gray-50">
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AI</span>
-            </div>
-            <span className="font-semibold text-gray-900">ThaiAI</span>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <DollarSign className="w-4 h-4" />
-              <span>เครดิต: ฿25.50</span>
-            </div>
-            <button
-              onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-              className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <History className="w-4 h-4" />
-              <span className="text-sm">ประวัติ</span>
-            </button>
-          </div>
-        </div>
-
         {/* Chat Area */}
         <div className="flex-1 flex flex-col">
           {messages.length === 0 ? (
@@ -389,9 +438,9 @@ export default function ChatAI() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-3xl ${message.isUser ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200'} rounded-2xl p-4 shadow-sm`}>
+                  <div className={`max-w-4xl w-full ${message.isUser ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200'} rounded-2xl p-6 shadow-sm`}>
                     {!message.isUser && (
-                      <div className="flex items-center space-x-2 mb-3 text-sm text-gray-500">
+                      <div className="flex items-center space-x-2 mb-4 text-sm text-gray-500">
                         <Bot className="w-4 h-4" />
                         <span>{message.aiModel}</span>
                         {message.cost && (
@@ -403,67 +452,121 @@ export default function ChatAI() {
                       </div>
                     )}
                     
-                    <div className="whitespace-pre-wrap">{message.content}</div>
+                    <div className="whitespace-pre-wrap leading-relaxed">{message.content}</div>
                     
+                    {/* Sources */}
                     {message.sources && (
-                      <div className="mt-4 space-y-2">
-                        <div className="text-sm font-medium text-gray-700">แหล่งอ้างอิง:</div>
-                        {message.sources.map((source, index) => (
-                          <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-gray-900">{source.title}</div>
-                              <div className="text-xs text-gray-500">{source.url}</div>
+                      <div className="mt-6 space-y-3">
+                        <div className="flex items-center space-x-2 text-sm font-medium text-gray-700">
+                          <ExternalLink className="w-4 h-4" />
+                          <span>แหล่งข้อมูลอ้างอิง</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {message.sources.map((source, index) => (
+                            <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-sm font-medium text-gray-900 truncate">{source.title}</h4>
+                                  <p className="text-xs text-gray-500 truncate">{source.url}</p>
+                                </div>
+                                <div className="flex items-center space-x-2 ml-2">
+                                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCredibilityColor(source.credibility)}`}>
+                                    {getCredibilityLabel(source.credibility)}
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-gray-600 line-clamp-2">{source.snippet}</p>
+                              <div className="flex items-center justify-between mt-2">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-xs text-gray-500">ความเกี่ยวข้อง:</span>
+                                  <div className="flex items-center space-x-1">
+                                    <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                                      <div 
+                                        className="bg-blue-500 h-1.5 rounded-full transition-all duration-500"
+                                        style={{ width: `${source.relevance}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-xs text-gray-500">{source.relevance}%</span>
+                                  </div>
+                                </div>
+                                <button className="text-xs text-blue-600 hover:text-blue-700 flex items-center space-x-1">
+                                  <ExternalLink className="w-3 h-3" />
+                                  <span>เปิด</span>
+                                </button>
+                              </div>
                             </div>
-                            <div className="text-xs text-gray-500">{source.relevance}%</div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Follow-up Questions */}
+                    {message.followUpQuestions && (
+                      <div className="mt-6 space-y-3">
+                        <div className="flex items-center space-x-2 text-sm font-medium text-gray-700">
+                          <MessageSquare className="w-4 h-4" />
+                          <span>คำถามต่อเนื่อง</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {message.followUpQuestions.map((question, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handleFollowUpClick(question)}
+                              className="p-3 text-left bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 hover:border-blue-300 transition-all group"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-blue-800 group-hover:text-blue-900">{question}</span>
+                                <ArrowRight className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
                     
                     {!message.isUser && (
-                      <div className="flex items-center space-x-2 mt-4 pt-3 border-t border-gray-100">
-                        <button
-                          onClick={() => navigator.clipboard.writeText(message.content)}
-                          className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        >
-                          <Copy className="w-3 h-3" />
-                          <span>คัดลอก</span>
-                        </button>
-                        <button
-                          onClick={handleShare}
-                          className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        >
-                          <Share2 className="w-3 h-3" />
-                          <span>แชร์</span>
-                        </button>
-                        <button
-                          onClick={() => handleExport('word')}
-                          className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        >
-                          <FileText className="w-3 h-3" />
-                          <span>Word</span>
-                        </button>
-                        <button
-                          onClick={() => handleExport('pdf')}
-                          className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        >
-                          <Download className="w-3 h-3" />
-                          <span>PDF</span>
-                        </button>
-                        <button
-                          onClick={() => handleExport('link')}
-                          className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        >
-                          <Link className="w-3 h-3" />
-                          <span>ลิงก์</span>
-                        </button>
-                        <button
-                          onClick={() => handleExport('template')}
-                          className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        >
-                          <Save className="w-3 h-3" />
-                          <span>Template</span>
-                        </button>
+                      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => navigator.clipboard.writeText(message.content)}
+                            className="flex items-center space-x-1 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>คัดลอก</span>
+                          </button>
+                          <button
+                            onClick={handleShare}
+                            className="flex items-center space-x-1 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <Share2 className="w-3 h-3" />
+                            <span>แชร์</span>
+                          </button>
+                          <button
+                            className="flex items-center space-x-1 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <Bookmark className="w-3 h-3" />
+                            <span>บุ๊กมาร์ก</span>
+                          </button>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handleExport('word')}
+                            className="flex items-center space-x-1 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <FileText className="w-3 h-3" />
+                            <span>Word</span>
+                          </button>
+                          <button
+                            onClick={() => handleExport('pdf')}
+                            className="flex items-center space-x-1 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <Download className="w-3 h-3" />
+                            <span>PDF</span>
+                          </button>
+                          <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                            <MoreHorizontal className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -472,10 +575,14 @@ export default function ChatAI() {
               
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                      <span className="text-gray-500">กำลังคิด...</span>
+                  <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm max-w-4xl w-full">
+                    <div className="flex items-center space-x-3">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                      <span className="text-gray-500">กำลังค้นหาและวิเคราะห์ข้อมูล...</span>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <div className="h-2 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-2 bg-gray-200 rounded animate-pulse w-3/4"></div>
                     </div>
                   </div>
                 </div>
@@ -484,160 +591,178 @@ export default function ChatAI() {
           )}
 
           {/* Input Area */}
-          <div className="p-6 bg-white border-t border-gray-200">
-            {/* AI Selector */}
-            <div className="mb-4">
-              <div className="relative">
-                <button
-                  onClick={() => setShowAIDropdown(!showAIDropdown)}
-                  className="flex items-center space-x-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-sm"
-                >
-                  <selectedAI.icon className={`w-4 h-4 ${selectedAI.color}`} />
-                  <span className="font-medium">{selectedAI.name}</span>
-                  <span className="text-gray-500">฿{selectedAI.cost.toFixed(3)}</span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                </button>
+          <div className="p-6 bg-gray-50">
+            <div className="max-w-4xl mx-auto">
+              {/* AI Selector */}
+              <div className="mb-4">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowAIDropdown(!showAIDropdown)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-50 rounded-lg transition-colors text-sm border border-gray-200 shadow-sm"
+                  >
+                    <selectedAI.icon className={`w-4 h-4 ${selectedAI.color}`} />
+                    <span className="font-medium">{selectedAI.name}</span>
+                    <span className="text-gray-500">฿{selectedAI.cost.toFixed(3)}</span>
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </button>
 
-                {showAIDropdown && (
-                  <div className="absolute bottom-full mb-2 left-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-2 z-10">
-                    {aiModels.map((model) => {
-                      const IconComponent = model.icon;
-                      return (
-                        <button
-                          key={model.id}
-                          onClick={() => {
-                            setSelectedAI(model);
-                            setShowAIDropdown(false);
-                          }}
-                          className={`w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors ${
-                            selectedAI.id === model.id ? 'bg-blue-50 border border-blue-200' : ''
-                          }`}
-                        >
-                          <IconComponent className={`w-5 h-5 ${model.color}`} />
-                          <div className="flex-1 text-left">
-                            <div className="flex items-center justify-between">
-                              <span className="font-medium text-gray-900">{model.name}</span>
-                              <span className="text-sm text-gray-500">฿{model.cost.toFixed(3)}</span>
+                  {showAIDropdown && (
+                    <div className="absolute bottom-full mb-2 left-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-2 z-10">
+                      {aiModels.map((model) => {
+                        const IconComponent = model.icon;
+                        return (
+                          <button
+                            key={model.id}
+                            onClick={() => {
+                              setSelectedAI(model);
+                              setShowAIDropdown(false);
+                            }}
+                            className={`w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors ${
+                              selectedAI.id === model.id ? 'bg-blue-50 border border-blue-200' : ''
+                            }`}
+                          >
+                            <IconComponent className={`w-5 h-5 ${model.color}`} />
+                            <div className="flex-1 text-left">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-900">{model.name}</span>
+                                <span className="text-sm text-gray-500">฿{model.cost.toFixed(3)}</span>
+                              </div>
+                              <div className="text-sm text-gray-500">{model.description}</div>
+                              <div className="text-xs text-gray-400">{model.specialty}</div>
                             </div>
-                            <div className="text-sm text-gray-500">{model.description}</div>
-                            <div className="text-xs text-gray-400">{model.specialty}</div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Input Box */}
-            <div className="relative">
-              <div className="flex items-end space-x-3 p-4 bg-gray-50 rounded-2xl border border-gray-200 focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                <div className="flex space-x-2">
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
-                    <Paperclip className="w-5 h-5" />
-                  </button>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
-                    <Image className="w-5 h-5" />
-                  </button>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
-                    <Mic className="w-5 h-5" />
+              {/* Input Box */}
+              <div className="relative">
+                <div className="flex items-end space-x-3 p-4 bg-white rounded-2xl border border-gray-200 focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+                  <div className="flex space-x-2">
+                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Paperclip className="w-5 h-5" />
+                    </button>
+                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Image className="w-5 h-5" />
+                    </button>
+                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Mic className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  <textarea
+                    ref={textareaRef}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="ถามอะไรก็ได้กับ AI..."
+                    className="flex-1 bg-transparent border-none outline-none resize-none min-h-[24px] max-h-32 text-gray-900 placeholder-gray-500"
+                    rows={1}
+                  />
+                  
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isLoading}
+                    className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Send className="w-5 h-5" />
                   </button>
                 </div>
-                
-                <textarea
-                  ref={textareaRef}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="ถามอะไรก็ได้กับ AI..."
-                  className="flex-1 bg-transparent border-none outline-none resize-none min-h-[24px] max-h-32 text-gray-900 placeholder-gray-500"
-                  rows={1}
-                />
-                
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isLoading}
-                  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Send className="w-5 h-5" />
-                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* History Button */}
+      <button
+        onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+        className="fixed top-4 right-4 z-50 flex items-center space-x-2 px-4 py-2 bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg shadow-lg border border-gray-200 transition-colors"
+      >
+        <History className="w-4 h-4" />
+        <span className="text-sm">ประวัติ</span>
+      </button>
+
       {/* History Sidebar */}
       {isHistoryOpen && (
-        <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-gray-900">ประวัติการสนทนา</h2>
-              <button
-                onClick={() => setIsHistoryOpen(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        <>
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setIsHistoryOpen(false)}
+          />
+          <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 flex flex-col">
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-gray-900">ประวัติการสนทนา</h2>
+                <button
+                  onClick={() => setIsHistoryOpen(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600 rounded"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchHistory}
+                  onChange={(e) => setSearchHistory(e.target.value)}
+                  placeholder="ค้นหาการสนทนา..."
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300"
+                />
+              </div>
             </div>
             
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchHistory}
-                onChange={(e) => setSearchHistory(e.target.value)}
-                placeholder="ค้นหาการสนทนา..."
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300"
-              />
-            </div>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {Object.entries(groupedHistory).map(([period, chats]) => {
-              if (chats.length === 0) return null;
-              
-              const periodLabels = {
-                today: 'วันนี้',
-                yesterday: 'เมื่อวาน',
-                thisWeek: 'สัปดาห์นี้',
-                older: 'เก่ากว่านี้'
-              };
-              
-              return (
-                <div key={period}>
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">
-                    {periodLabels[period as keyof typeof periodLabels]}
-                  </h3>
-                  <div className="space-y-2">
-                    {chats.map((chat) => (
-                      <button
-                        key={chat.id}
-                        className="w-full p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
-                      >
-                        <div className="font-medium text-gray-900 text-sm mb-1 group-hover:text-blue-700">
-                          {chat.title}
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-gray-500">
-                          <div className="flex items-center space-x-2">
-                            <span>{chat.aiModel}</span>
-                            <span>•</span>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {Object.entries(groupedHistory).map(([period, chats]) => {
+                if (chats.length === 0) return null;
+                
+                const periodLabels = {
+                  today: 'วันนี้',
+                  yesterday: 'เมื่อวาน',
+                  thisWeek: 'สัปดาห์นี้',
+                  older: 'เก่ากว่านี้'
+                };
+                
+                return (
+                  <div key={period}>
+                    <h3 className="text-sm font-medium text-gray-500 mb-2">
+                      {periodLabels[period as keyof typeof periodLabels]}
+                    </h3>
+                    <div className="space-y-2">
+                      {chats.map((chat) => (
+                        <button
+                          key={chat.id}
+                          className="w-full p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+                        >
+                          <div className="font-medium text-gray-900 text-sm mb-1 group-hover:text-blue-700 line-clamp-2">
+                            {chat.title}
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-gray-500">
+                            <div className="flex items-center space-x-2">
+                              <span>{chat.aiModel}</span>
+                              <span>•</span>
+                              <span>{chat.messageCount} ข้อความ</span>
+                            </div>
                             <span>฿{chat.totalCost.toFixed(2)}</span>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{chat.lastUpdated.toLocaleDateString('th-TH')}</span>
+                          <div className="flex items-center space-x-1 mt-1">
+                            <Clock className="w-3 h-3 text-gray-400" />
+                            <span className="text-xs text-gray-400">{chat.lastUpdated.toLocaleDateString('th-TH')}</span>
                           </div>
-                        </div>
-                      </button>
-                    ))}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
