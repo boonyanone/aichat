@@ -32,7 +32,17 @@ import {
   Copy,
   Share2,
   Download,
-  Bookmark
+  Bookmark,
+  Image,
+  FileText,
+  Lightbulb,
+  Target,
+  TrendingUp,
+  Award,
+  Rocket,
+  Filter,
+  Calendar,
+  User
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -281,13 +291,14 @@ const templateCategories = [
 ];
 
 export default function ChatAI() {
-  const [selectedAI, setSelectedAI] = useState<AIModel>(aiModels[0]); // Default to AI Router
+  const [selectedAI, setSelectedAI] = useState<AIModel>(aiModels[0]);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchHistory, setSearchHistory] = useState('');
+  const [showAISelector, setShowAISelector] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([
@@ -353,12 +364,10 @@ export default function ChatAI() {
     setMessage('');
     setIsLoading(true);
 
-    // Auto-resize textarea
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
 
-    // Simulate AI response
     setTimeout(() => {
       const aiResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -434,7 +443,6 @@ export default function ChatAI() {
     chat.lastMessage.toLowerCase().includes(searchHistory.toLowerCase())
   );
 
-  // Auto-resize textarea
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
     const textarea = e.target;
@@ -446,33 +454,27 @@ export default function ChatAI() {
     <div className="h-full flex bg-gray-50 relative">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
+        {/* Header - แบบ Perplexity */}
+        <div className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                <MessageSquare className="h-7 w-7 mr-3 text-blue-600" />
-                Chat AI
-              </h1>
-              
-              {/* AI Model Selector */}
-              <div className="relative">
-                <select
-                  value={selectedAI.id}
-                  onChange={(e) => setSelectedAI(aiModels.find(ai => ai.id === e.target.value) || aiModels[0])}
-                  className="appearance-none bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 pr-10 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px]"
-                >
-                  {aiModels.map((ai) => (
-                    <option key={ai.id} value={ai.id}>
-                      {ai.name} - ฿{ai.cost.toFixed(3)} - {ai.specialty}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            {/* Left - Logo */}
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                <MessageSquare className="h-5 w-5 text-white" />
               </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                ThaiAI
+              </span>
             </div>
 
+            {/* Right - Credits & History */}
             <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 bg-green-50 px-3 py-1.5 rounded-full">
+                <DollarSign className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium text-green-800">
+                  15,420 เครดิต
+                </span>
+              </div>
               <button 
                 onClick={() => setShowHistory(!showHistory)}
                 className={`p-2 rounded-lg transition-colors ${
@@ -493,41 +495,12 @@ export default function ChatAI() {
             <div className="max-w-4xl mx-auto p-8">
               {/* Hero Section */}
               <div className="text-center mb-12">
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
-                  <Sparkles className="w-4 h-4" />
-                  AI หลายค่าย ราคาเป็นธรรม
-                </div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                  เลือกใช้ AI ที่เหมาะกับคุณ
+                  AI หลายค่าย ราคาเป็นธรรม
                 </h1>
                 <p className="text-xl text-gray-600 mb-8">
-                  จ่ายเฉพาะที่ใช้จริง ไม่มีค่าธรรมเนียมรายเดือน
+                  เลือกใช้ AI ที่เหมาะกับงาน จ่ายเฉพาะที่ใช้จริง
                 </p>
-              </div>
-
-              {/* AI Models Showcase */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
-                {aiModels.map((ai) => (
-                  <div 
-                    key={ai.id}
-                    onClick={() => setSelectedAI(ai)}
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      selectedAI.id === ai.id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
-                  >
-                    <div className={`w-12 h-12 ${ai.color} rounded-lg flex items-center justify-center mb-3`}>
-                      {React.cloneElement(ai.icon, { className: 'w-6 h-6 text-white' })}
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{ai.name}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{ai.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">{ai.specialty}</span>
-                      <span className="text-sm font-medium text-green-600">฿{ai.cost.toFixed(3)}</span>
-                    </div>
-                  </div>
-                ))}
               </div>
 
               {/* Template Categories */}
@@ -684,16 +657,68 @@ export default function ChatAI() {
           </div>
         )}
 
-        {/* Input Area */}
+        {/* Input Area - แบบ Perplexity/Monica */}
         <div className="border-t border-gray-200 bg-white p-4 flex-shrink-0">
           <div className="max-w-4xl mx-auto">
+            {/* AI Selector - แบบ Monica */}
+            <div className="mb-3">
+              <div className="relative inline-block">
+                <button
+                  onClick={() => setShowAISelector(!showAISelector)}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors"
+                >
+                  <div className={`w-5 h-5 ${selectedAI.color} rounded-full flex items-center justify-center`}>
+                    {React.cloneElement(selectedAI.icon, { className: 'w-3 h-3 text-white' })}
+                  </div>
+                  <span className="font-medium text-gray-700">{selectedAI.name}</span>
+                  <span className="text-xs text-gray-500">฿{selectedAI.cost.toFixed(3)}</span>
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+
+                {showAISelector && (
+                  <div className="absolute bottom-full left-0 mb-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-2 z-50">
+                    <div className="space-y-1">
+                      {aiModels.map((ai) => (
+                        <button
+                          key={ai.id}
+                          onClick={() => {
+                            setSelectedAI(ai);
+                            setShowAISelector(false);
+                          }}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
+                            selectedAI.id === ai.id ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className={`w-8 h-8 ${ai.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                            {React.cloneElement(ai.icon, { className: 'w-4 h-4 text-white' })}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium text-gray-900">{ai.name}</span>
+                              <span className="text-sm font-medium text-green-600">฿{ai.cost.toFixed(3)}</span>
+                            </div>
+                            <p className="text-xs text-gray-600 truncate">{ai.description}</p>
+                            <p className="text-xs text-blue-600 mt-1">{ai.specialty}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Input Box - แบบ Perplexity */}
             <div className="relative">
-              <div className="flex items-end gap-3 bg-gray-50 rounded-2xl border border-gray-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 p-4">
+              <div className="flex items-end gap-3 bg-white rounded-2xl border-2 border-gray-200 focus-within:border-blue-500 p-4 shadow-sm">
                 <div className="flex gap-2">
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                     <Paperclip className="w-5 h-5" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <Image className="w-5 h-5" />
+                  </button>
+                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                     <Mic className="w-5 h-5" />
                   </button>
                 </div>
@@ -703,7 +728,7 @@ export default function ChatAI() {
                   value={message}
                   onChange={handleTextareaChange}
                   onKeyPress={handleKeyPress}
-                  placeholder="พิมพ์ข้อความถาม AI..."
+                  placeholder="ถามอะไรก็ได้กับ AI..."
                   className="flex-1 bg-transparent border-none outline-none resize-none min-h-[24px] max-h-[120px] text-gray-900 placeholder-gray-500"
                   rows={1}
                 />
@@ -726,7 +751,7 @@ export default function ChatAI() {
         </div>
       </div>
 
-      {/* History Sidebar */}
+      {/* History Sidebar - แบบ Perplexity */}
       {showHistory && (
         <>
           <div 
@@ -746,6 +771,7 @@ export default function ChatAI() {
                 </button>
               </div>
               
+              {/* Search - แบบ Perplexity */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -753,7 +779,7 @@ export default function ChatAI() {
                   placeholder="ค้นหาการสนทนา..."
                   value={searchHistory}
                   onChange={(e) => setSearchHistory(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-gray-50"
                 />
               </div>
             </div>
@@ -817,13 +843,21 @@ export default function ChatAI() {
 
             {/* History Footer */}
             <div className="p-4 border-t border-gray-200 flex-shrink-0">
-              <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center">
+              <button className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center">
                 <Plus className="w-4 h-4 mr-2" />
                 เริ่มการสนทนาใหม่
               </button>
             </div>
           </div>
         </>
+      )}
+
+      {/* Click outside to close AI selector */}
+      {showAISelector && (
+        <div 
+          className="fixed inset-0 z-40"
+          onClick={() => setShowAISelector(false)}
+        />
       )}
     </div>
   );
