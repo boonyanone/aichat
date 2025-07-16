@@ -20,7 +20,10 @@ import {
   Building,
   GraduationCap,
   Search as SearchIcon,
-  Globe
+  Globe,
+  Brain,
+  Zap,
+  CheckCircle
 } from 'lucide-react';
 
 interface Message {
@@ -51,90 +54,38 @@ interface ChatHistory {
 }
 
 const aiModels = [
-  { id: 'gpt-4', name: 'GPT-4', provider: 'OpenAI', cost: 0.03, color: 'bg-green-500' },
-  { id: 'claude-3', name: 'Claude 3', provider: 'Anthropic', cost: 0.025, color: 'bg-orange-500' },
-  { id: 'gemini-pro', name: 'Gemini Pro', provider: 'Google', cost: 0.02, color: 'bg-blue-500' },
-  { id: 'perplexity', name: 'Perplexity', provider: 'Perplexity AI', cost: 0.015, color: 'bg-purple-500' },
-];
-
-const personas = [
-  {
-    id: 'student',
-    name: 'นักเรียน/นักศึกษา',
-    icon: GraduationCap,
-    color: 'bg-blue-500',
-    templates: [
-      'อธิบายแนวคิดนี้ให้เข้าใจง่าย',
-      'ช่วยทำการบ้านเรื่อง...',
-      'สรุปเนื้อหาบทเรียน'
-    ]
-  },
-  {
-    id: 'employee',
-    name: 'พนักงาน',
-    icon: User,
+  { 
+    id: 'gpt-4', 
+    name: 'GPT-4', 
+    provider: 'OpenAI', 
+    cost: 0.03, 
     color: 'bg-green-500',
-    templates: [
-      'เขียนอีเมลทางการ',
-      'วิเคราะห์ข้อมูลการขาย',
-      'จัดทำรายงานประจำเดือน'
-    ]
+    logo: '🤖'
   },
-  {
-    id: 'government',
-    name: 'ข้าราชการ',
-    icon: Building,
-    color: 'bg-purple-500',
-    templates: [
-      'ร่างหนังสือราชการ',
-      'วิเคราะห์นโยบายสาธารณะ',
-      'จัดทำแผนงานโครงการ'
-    ]
-  },
-  {
-    id: 'researcher',
-    name: 'นักวิจัย',
-    icon: SearchIcon,
-    color: 'bg-indigo-500',
-    templates: [
-      'ค้นหาเอกสารอ้างอิง',
-      'วิเคราะห์ข้อมูลวิจัย',
-      'เขียน Abstract'
-    ]
-  },
-  {
-    id: 'business',
-    name: 'ธุรกิจ',
-    icon: Briefcase,
+  { 
+    id: 'claude-3', 
+    name: 'Claude 3.5 Sonnet', 
+    provider: 'Anthropic', 
+    cost: 0.025, 
     color: 'bg-orange-500',
-    templates: [
-      'วิเคราะห์ตลาด',
-      'จัดทำแผนธุรกิจ',
-      'คำนวณ ROI'
-    ]
+    logo: '🧠'
   },
-  {
-    id: 'organization',
-    name: 'หน่วยงาน/องค์กร',
-    icon: Building,
-    color: 'bg-red-500',
-    templates: [
-      'วิเคราะห์นโยบายองค์กร',
-      'จัดทำแผนกลยุทธ์',
-      'ประเมินความเสี่ยง'
-    ]
+  { 
+    id: 'gemini-pro', 
+    name: 'Gemini Pro', 
+    provider: 'Google', 
+    cost: 0.02, 
+    color: 'bg-blue-500',
+    logo: '💎'
   },
-  {
-    id: 'general',
-    name: 'ทั่วไป',
-    icon: Globe,
-    color: 'bg-gray-500',
-    templates: [
-      'คำถามทั่วไป',
-      'ขอคำแนะนำ',
-      'แก้ปัญหาเบื้องต้น'
-    ]
-  }
+  { 
+    id: 'perplexity', 
+    name: 'Perplexity', 
+    provider: 'Perplexity AI', 
+    cost: 0.015, 
+    color: 'bg-purple-500',
+    logo: '🔍'
+  },
 ];
 
 const mockSources: Source[] = [
@@ -199,7 +150,6 @@ export default function ChatAI() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [selectedAI, setSelectedAI] = useState(aiModels[0]);
-  const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [searchHistory, setSearchHistory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -249,12 +199,6 @@ export default function ChatAI() {
       e.preventDefault();
       handleSend();
     }
-  };
-
-  const handleTemplateClick = (template: string) => {
-    setInputValue(template);
-    setSelectedPersona(null);
-    textareaRef.current?.focus();
   };
 
   const handleFollowUpClick = (question: string) => {
@@ -323,11 +267,11 @@ export default function ChatAI() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-900">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* AI Router and History Button */}
-        <div className="bg-gray-50 p-4">
+        {/* Top Bar with AI Selector and History */}
+        <div className="bg-gray-800 border-b border-gray-700 p-4">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center space-x-4">
               {/* AI Selector */}
@@ -335,11 +279,11 @@ export default function ChatAI() {
                 <select
                   value={selectedAI.id}
                   onChange={(e) => setSelectedAI(aiModels.find(ai => ai.id === e.target.value) || aiModels[0])}
-                  className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="appearance-none bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {aiModels.map((ai) => (
-                    <option key={ai.id} value={ai.id}>
-                      {ai.name} - ฿{ai.cost}/ข้อความ
+                    <option key={ai.id} value={ai.id} className="bg-gray-700">
+                      {ai.logo} {ai.name} - ฿{ai.cost}/ข้อความ
                     </option>
                   ))}
                 </select>
@@ -351,7 +295,7 @@ export default function ChatAI() {
               {/* History Button */}
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 transition-colors"
               >
                 <History className="w-4 h-4" />
                 <span>ประวัติ</span>
@@ -364,52 +308,61 @@ export default function ChatAI() {
         <div className="flex-1 overflow-y-auto pb-32">
           <div className="max-w-4xl mx-auto px-4 py-6">
             {messages.length === 0 ? (
-              /* Templates */
-              <div className="space-y-8">
-                <div className="text-center">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    ถามอะไรก็ได้กับ AI
-                  </h1>
-                  <p className="text-gray-600">
-                    เลือก AI ที่เหมาะกับงานของคุณ จ่ายเฉพาะที่ใช้จริง
-                  </p>
-                </div>
+              /* Welcome Screen */
+              <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="bg-gray-800 rounded-2xl p-8 max-w-md w-full border border-gray-700">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Brain className="w-8 h-8 text-white" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-white mb-2">
+                      ถามอะไรก็ได้กับ AI
+                    </h1>
+                    <p className="text-gray-400 text-sm">
+                      เลือก AI ที่เหมาะกับงานของคุณ
+                    </p>
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {personas.map((persona) => {
-                    const Icon = persona.icon;
-                    return (
-                      <div
-                        key={persona.id}
-                        className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => setSelectedPersona(selectedPersona === persona.id ? null : persona.id)}
+                  {/* AI Provider Selection */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-gray-300 mb-3">เลือก AI Provider:</h3>
+                    {aiModels.map((ai) => (
+                      <button
+                        key={ai.id}
+                        onClick={() => setSelectedAI(ai)}
+                        className={`w-full p-3 rounded-lg border transition-all ${
+                          selectedAI.id === ai.id
+                            ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                            : 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-gray-500 hover:bg-gray-700'
+                        }`}
                       >
-                        <div className="flex items-center space-x-3 mb-4">
-                          <div className={`${persona.color} p-2 rounded-lg`}>
-                            <Icon className="w-5 h-5 text-white" />
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <span className="text-lg">{ai.logo}</span>
+                            <div className="text-left">
+                              <p className="font-medium">{ai.name}</p>
+                              <p className="text-xs opacity-75">{ai.provider}</p>
+                            </div>
                           </div>
-                          <h3 className="font-semibold text-gray-900">{persona.name}</h3>
+                          <div className="text-right">
+                            <p className="text-sm font-medium">฿{ai.cost}</p>
+                            <p className="text-xs opacity-75">ต่อข้อความ</p>
+                          </div>
                         </div>
-                        
-                        {selectedPersona === persona.id && (
-                          <div className="space-y-2">
-                            {persona.templates.map((template, index) => (
-                              <button
-                                key={index}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleTemplateClick(template);
-                                }}
-                                className="w-full text-left p-3 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                              >
-                                {template}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Quick Start Tips */}
+                  <div className="mt-6 p-4 bg-gray-700/50 rounded-lg border border-gray-600">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Zap className="w-4 h-4 text-yellow-500" />
+                      <span className="text-sm font-medium text-gray-300">เริ่มต้นใช้งาน</span>
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      พิมพ์คำถามในช่องด้านล่าง หรือลองถามเรื่องที่สนใจ
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -417,20 +370,20 @@ export default function ChatAI() {
               <div className="space-y-6">
                 {messages.map((message) => (
                   <div key={message.id} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-3xl ${message.isUser ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200'} rounded-2xl p-4 shadow-sm`}>
+                    <div className={`max-w-3xl ${message.isUser ? 'bg-blue-600 text-white' : 'bg-gray-800 border border-gray-700 text-gray-100'} rounded-2xl p-4 shadow-sm`}>
                       <div className="whitespace-pre-wrap">{message.content}</div>
                       
                       {!message.isUser && message.sources && (
                         <div className="mt-4 space-y-3">
-                          <h4 className="font-semibold text-gray-900 text-sm">แหล่งข้อมูลอ้างอิง:</h4>
+                          <h4 className="font-semibold text-gray-300 text-sm">แหล่งข้อมูลอ้างอิง:</h4>
                           {message.sources.map((source, index) => (
-                            <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                            <div key={index} className="bg-gray-700 rounded-lg p-3 border border-gray-600">
                               <div className="flex items-start justify-between mb-2">
                                 <a
                                   href={source.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="font-medium text-blue-600 hover:text-blue-800 text-sm flex items-center space-x-1"
+                                  className="font-medium text-blue-400 hover:text-blue-300 text-sm flex items-center space-x-1"
                                 >
                                   <span>{source.title}</span>
                                   <ExternalLink className="w-3 h-3" />
@@ -439,11 +392,11 @@ export default function ChatAI() {
                                   {getCredibilityLabel(source.credibility)}
                                 </span>
                               </div>
-                              <p className="text-gray-600 text-sm mb-2">{source.snippet}</p>
+                              <p className="text-gray-400 text-sm mb-2">{source.snippet}</p>
                               <div className="flex items-center space-x-4 text-xs text-gray-500">
                                 <div className="flex items-center space-x-1">
                                   <span>ความเกี่ยวข้อง:</span>
-                                  <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                                  <div className="w-16 bg-gray-600 rounded-full h-1.5">
                                     <div 
                                       className="bg-blue-500 h-1.5 rounded-full" 
                                       style={{ width: `${source.relevance}%` }}
@@ -459,13 +412,13 @@ export default function ChatAI() {
 
                       {!message.isUser && message.followUpQuestions && (
                         <div className="mt-4">
-                          <h4 className="font-semibold text-gray-900 text-sm mb-3">คำถามต่อเนื่อง:</h4>
+                          <h4 className="font-semibold text-gray-300 text-sm mb-3">คำถามต่อเนื่อง:</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             {message.followUpQuestions.map((question, index) => (
                               <button
                                 key={index}
                                 onClick={() => handleFollowUpClick(question)}
-                                className="text-left p-3 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                                className="text-left p-3 text-sm text-gray-300 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors border border-gray-600"
                               >
                                 {question}
                               </button>
@@ -475,21 +428,21 @@ export default function ChatAI() {
                       )}
 
                       {!message.isUser && (
-                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
-                          <div className="flex items-center space-x-2 text-xs text-gray-500">
+                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-600">
+                          <div className="flex items-center space-x-2 text-xs text-gray-400">
                             <div className={`w-2 h-2 rounded-full ${selectedAI.color}`}></div>
                             <span>{message.aiModel}</span>
                             <span>•</span>
                             <span>{formatTime(message.timestamp)}</span>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                            <button className="p-1 text-gray-400 hover:text-gray-300 transition-colors">
                               <Copy className="w-4 h-4" />
                             </button>
-                            <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                            <button className="p-1 text-gray-400 hover:text-gray-300 transition-colors">
                               <Share className="w-4 h-4" />
                             </button>
-                            <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                            <button className="p-1 text-gray-400 hover:text-gray-300 transition-colors">
                               <Bookmark className="w-4 h-4" />
                             </button>
                           </div>
@@ -501,10 +454,10 @@ export default function ChatAI() {
                 
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                    <div className="bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow-sm">
                       <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                        <span className="text-gray-600">กำลังคิด...</span>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        <span className="text-gray-300">กำลังคิด...</span>
                       </div>
                     </div>
                   </div>
@@ -516,28 +469,28 @@ export default function ChatAI() {
         </div>
 
         {/* Sticky Input Area */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-gray-200 p-4 shadow-lg z-30">
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-900/90 backdrop-blur-sm border-t border-gray-700 p-4 shadow-lg z-30">
           <div className="max-w-4xl mx-auto">
-            <div className="relative bg-white rounded-2xl border border-gray-300 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+            <div className="relative bg-gray-800 rounded-2xl border border-gray-600 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
               <textarea
                 ref={textareaRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="ถามอะไรก็ได้กับ AI..."
-                className="w-full px-4 py-3 pr-32 border-0 rounded-2xl resize-none focus:outline-none focus:ring-0 max-h-32"
+                className="w-full px-4 py-3 pr-32 border-0 rounded-2xl resize-none focus:outline-none focus:ring-0 max-h-32 bg-gray-800 text-white placeholder-gray-400"
                 rows={1}
                 style={{ minHeight: '48px' }}
               />
               
               <div className="absolute right-2 bottom-2 flex items-center space-x-2">
-                <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                <button className="p-2 text-gray-400 hover:text-gray-300 transition-colors">
                   <Paperclip className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                <button className="p-2 text-gray-400 hover:text-gray-300 transition-colors">
                   <Image className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                <button className="p-2 text-gray-400 hover:text-gray-300 transition-colors">
                   <Mic className="w-4 h-4" />
                 </button>
                 <button
@@ -560,12 +513,12 @@ export default function ChatAI() {
             className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
             onClick={() => setShowHistory(false)}
           />
-          <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl z-50 lg:relative lg:shadow-none">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">ประวัติการแชท</h2>
+          <div className="fixed right-0 top-0 h-full w-80 bg-gray-800 shadow-xl z-50 lg:relative lg:shadow-none border-l border-gray-700">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <h2 className="text-lg font-semibold text-white">ประวัติการแชท</h2>
               <button
                 onClick={() => setShowHistory(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 transition-colors lg:hidden"
+                className="p-1 text-gray-400 hover:text-gray-300 transition-colors lg:hidden"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -579,7 +532,7 @@ export default function ChatAI() {
                   placeholder="ค้นหาการสนทนา..."
                   value={searchHistory}
                   onChange={(e) => setSearchHistory(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-gray-100 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
                 />
               </div>
             </div>
@@ -588,9 +541,9 @@ export default function ChatAI() {
               {searchHistory ? (
                 <div className="space-y-2">
                   {filteredHistory.map((chat) => (
-                    <div key={chat.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-                      <h3 className="font-medium text-gray-900 text-sm mb-1">{chat.title}</h3>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div key={chat.id} className="p-3 bg-gray-700 rounded-lg hover:bg-gray-600 cursor-pointer transition-colors border border-gray-600">
+                      <h3 className="font-medium text-white text-sm mb-1">{chat.title}</h3>
+                      <div className="flex items-center justify-between text-xs text-gray-400">
                         <div className="flex items-center space-x-2">
                           <div className={`w-2 h-2 rounded-full ${aiModels.find(ai => ai.id === chat.aiModel)?.color || 'bg-gray-400'}`}></div>
                           <span>{aiModels.find(ai => ai.id === chat.aiModel)?.name}</span>
@@ -614,21 +567,21 @@ export default function ChatAI() {
 
                     return (
                       <div key={period}>
-                        <h3 className="text-sm font-medium text-gray-500 mb-3">
+                        <h3 className="text-sm font-medium text-gray-400 mb-3">
                           {periodLabels[period as keyof typeof periodLabels]}
                         </h3>
                         <div className="space-y-2">
                           {chats.map((chat) => (
-                            <div key={chat.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-                              <h4 className="font-medium text-gray-900 text-sm mb-2">{chat.title}</h4>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                            <div key={chat.id} className="p-3 bg-gray-700 rounded-lg hover:bg-gray-600 cursor-pointer transition-colors border border-gray-600">
+                              <h4 className="font-medium text-white text-sm mb-2">{chat.title}</h4>
+                              <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
                                 <div className="flex items-center space-x-2">
                                   <div className={`w-2 h-2 rounded-full ${aiModels.find(ai => ai.id === chat.aiModel)?.color || 'bg-gray-400'}`}></div>
                                   <span>{aiModels.find(ai => ai.id === chat.aiModel)?.name}</span>
                                 </div>
                                 <span>฿{chat.cost.toFixed(2)}</span>
                               </div>
-                              <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <div className="flex items-center space-x-4 text-xs text-gray-400">
                                 <div className="flex items-center space-x-1">
                                   <MessageSquare className="w-3 h-3" />
                                   <span>{chat.messages.length} ข้อความ</span>
