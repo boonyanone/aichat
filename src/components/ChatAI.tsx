@@ -327,7 +327,7 @@ export default function ChatAI() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* AI Router and History Button */}
-        <div className="bg-white border-b border-gray-200 p-4">
+        <div className="bg-gray-50 p-4">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center space-x-4">
               {/* AI Selector */}
@@ -351,7 +351,7 @@ export default function ChatAI() {
               {/* History Button */}
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <History className="w-4 h-4" />
                 <span>ประวัติ</span>
@@ -516,7 +516,7 @@ export default function ChatAI() {
         </div>
 
         {/* Sticky Input Area */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-gray-200 p-4 shadow-lg">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-gray-200 p-4 shadow-lg z-30">
           <div className="max-w-4xl mx-auto">
             <div className="relative bg-white rounded-2xl border border-gray-300 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
               <textarea
