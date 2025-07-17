@@ -2,659 +2,268 @@ import React, { useState, useRef, useCallback } from 'react';
 import { 
   FileText, 
   Upload, 
-  Download, 
   Search, 
   Filter, 
+  Download, 
+  Share2, 
+  Trash2, 
   Eye, 
   Edit3, 
-  Trash2, 
-  Share2, 
-  Copy, 
-  Star, 
-  Clock, 
-  User, 
-  Calendar, 
-  Tag, 
-  Folder, 
-  FolderOpen, 
-  Plus, 
-  MoreHorizontal, 
-  CheckCircle, 
-  AlertCircle, 
-  Brain, 
-  Zap, 
-  Shield, 
-  Target, 
-  TrendingUp, 
-  BookOpen, 
-  FileImage, 
-  FileSpreadsheet, 
-  FileVideo, 
-  FileAudio, 
-  Archive, 
-  ExternalLink, 
-  Lightbulb, 
-  Award, 
-  Globe, 
-  Users, 
-  Building, 
-  GraduationCap, 
-  Briefcase, 
-  X, 
-  ChevronDown, 
-  ChevronUp, 
-  RefreshCw, 
-  Settings, 
-  Link, 
-  MessageSquare, 
+  MoreHorizontal,
+  Plus,
+  FolderPlus,
+  Star,
+  Clock,
+  User,
+  Tag,
+  AlertCircle,
+  CheckCircle,
+  Brain,
+  Zap,
+  Globe,
+  Shield,
+  BookOpen,
   BarChart3,
-  PieChart,
-  Activity,
-  Layers,
-  Database,
-  HardDrive,
-  Cloud,
-  Lock,
-  Unlock,
-  History,
-  GitBranch,
-  Save,
-  Send,
-  Mail,
-  Phone,
-  MapPin,
-  Camera,
-  Mic,
-  Video,
+  FileImage,
+  FileVideo,
+  FileAudio,
+  Archive,
+  RefreshCw,
+  X,
+  ChevronDown,
+  ChevronRight,
+  Folder,
+  File,
   Image,
+  Video,
   Music,
-  Film,
   Code,
-  Terminal,
-  Cpu,
-  Monitor,
-  Smartphone,
-  Tablet,
-  Headphones,
-  Speaker,
-  Printer,
-  Scanner,
-  Keyboard,
-  Mouse,
-  Gamepad2,
-  Joystick,
-  Wifi,
-  Bluetooth,
-  Usb,
-  HardDrive as Storage,
-  Server,
-  Router,
-  Modem,
-  Antenna,
-  Satellite,
-  Radio,
-  Tv,
-  Camera as WebCam,
-  Projector,
-  Flashlight,
-  Battery,
-  BatteryCharging,
-  Power,
-  PowerOff,
-  Volume,
-  Volume1,
-  Volume2,
-  VolumeX,
-  Play,
-  Pause,
-  Square,
-  SkipBack,
-  SkipForward,
-  Rewind,
-  FastForward,
-  Repeat,
-  Shuffle,
-  List,
-  Grid,
-  Columns,
-  Rows,
-  Table,
-  Layout,
-  Sidebar,
-  PanelLeft,
-  PanelRight,
-  PanelTop,
-  PanelBottom,
-  Maximize,
-  Minimize,
-  Move,
-  RotateCw,
-  RotateCcw,
-  FlipHorizontal,
-  FlipVertical,
-  Crop,
-  Scissors,
-  Paintbrush,
-  Palette,
-  Pipette,
-  Eraser,
-  Pen,
-  PenTool,
-  Pencil,
-  Highlighter,
-  Marker,
-  Ruler,
-  Compass,
-  Triangle,
-  Square as SquareShape,
-  Circle,
-  Pentagon,
-  Hexagon,
-  Octagon,
-  Star as StarShape,
-  Heart,
-  Diamond,
-  Spade,
-  Club,
-  Hash,
-  AtSign,
-  Percent,
-  Dollar,
-  Euro,
-  Pound,
-  Yen,
-  Bitcoin,
-  CreditCard,
-  Banknote,
-  Coins,
-  Wallet,
-  ShoppingCart,
-  ShoppingBag,
-  Store,
-  Storefront,
-  Package,
-  Package2,
-  PackageOpen,
-  PackageCheck,
-  PackageX,
-  PackagePlus,
-  PackageMinus,
-  PackageSearch,
-  Truck,
-  Car,
-  Bus,
-  Train,
-  Plane,
-  Ship,
-  Bike,
-  Scooter,
-  Motorcycle,
-  Taxi,
-  PlaneTakeoff,
-  PlaneLanding,
-  MapPin as Location,
-  Map,
-  Navigation,
-  Compass as CompassIcon,
-  Route,
-  Road,
-  Bridge,
-  Building2,
-  Home,
-  Office,
-  School,
-  Hospital,
-  Church,
-  Factory,
-  Warehouse,
-  Store as Shop,
-  Restaurant,
-  Hotel,
-  Bank,
-  Library,
-  Museum,
-  Theater,
-  Stadium,
-  Park,
-  Tree,
-  TreePine,
-  Flower,
-  Flower2,
-  Leaf,
-  Seedling,
-  Sprout,
-  Sun,
-  Moon,
-  Star as StarIcon,
-  Cloud as CloudIcon,
-  CloudRain,
-  CloudSnow,
-  CloudLightning,
-  CloudDrizzle,
-  CloudHail,
-  Tornado,
-  Hurricane,
-  Thermometer,
-  Gauge,
-  Barometer,
-  Wind,
-  Umbrella,
-  Snowflake,
-  Flame,
-  Droplet,
-  Waves,
-  Mountain,
-  Volcano,
-  Desert,
-  Forest,
-  Island,
-  Beach,
-  River,
-  Lake,
-  Ocean,
-  Fish,
-  Turtle,
-  Rabbit,
-  Squirrel,
-  Hedgehog,
-  Dog,
-  Cat,
-  Bird,
-  Butterfly,
-  Bug,
-  Ant,
-  Bee,
-  Spider,
-  Snail,
-  Worm,
-  Elephant,
-  Lion,
-  Tiger,
-  Bear,
-  Wolf,
-  Fox,
-  Deer,
-  Horse,
-  Cow,
-  Pig,
-  Sheep,
-  Goat,
-  Chicken,
-  Duck,
-  Turkey,
-  Penguin,
-  Owl,
-  Eagle,
-  Dove,
-  Peacock,
-  Parrot,
-  Flamingo,
-  Swan,
-  Crane,
-  Stork,
-  Pelican,
-  Seagull,
-  Albatross,
-  Hummingbird,
-  Woodpecker,
-  Robin,
-  Sparrow,
-  Canary,
-  Cardinal,
-  BlueJay,
-  Crow,
-  Raven,
-  Magpie,
-  Kingfisher,
-  Toucan,
-  Hornbill,
-  Hoopoe,
-  Bee as BeeIcon,
-  Ladybug,
-  Dragonfly,
-  Grasshopper,
-  Cricket,
-  Mantis,
-  Scorpion,
-  Crab,
-  Lobster,
-  Shrimp,
-  Octopus,
-  Squid,
-  Jellyfish,
-  Starfish,
-  Seahorse,
-  Whale,
-  Dolphin,
-  Shark,
-  Stingray,
-  Swordfish,
-  Tuna,
-  Salmon,
-  Trout,
-  Bass,
-  Carp,
-  Goldfish,
-  Angelfish,
-  Clownfish,
-  Pufferfish,
-  Eel,
-  Catfish,
-  Piranha,
-  Barracuda,
-  Manta,
-  Hammerhead,
-  GreatWhite,
-  TigerShark,
-  BullShark,
-  MakoShark,
-  NurseShark,
-  ReefShark,
-  BlacktipShark,
-  WhitetipShark,
-  SandTigerShark,
-  ThresherShark,
-  GoblinShark,
-  BaskingShark,
-  WhaleShark,
-  MegamouthShark,
-  CookieCutterShark,
-  LanternShark,
-  DogfishShark,
-  CatShark,
-  HornShark,
-  PortJacksonShark,
-  ZebraShark,
-  WobbegongShark,
-  AngelShark,
-  SawShark,
-  FrillShark,
-  GhostShark,
-  ElephantShark,
-  RayShark,
-  SkateShark,
-  GuitarShark,
-  BanjoShark,
-  ShovelNoseShark,
-  SawfishShark,
-  ElectricRayShark,
-  TorpedoRayShark,
-  StingrayShark,
-  EagleRayShark,
-  MantaRayShark,
-  DevilRayShark,
-  CownoseRayShark,
-  ButterflyRayShark,
-  RoundRayShark,
-  SkateRayShark,
-  ThornbackRayShark,
-  BlondRayShark,
-  UndulateRayShark,
-  SpottedRayShark,
-  MarbledRayShark,
-  SmallEyedRayShark,
-  LongNosedRayShark,
-  CommonRayShark,
-  BlueRayShark,
-  YellowRayShark,
-  PinkRayShark,
-  WhiteRayShark,
-  BlackRayShark,
-  GrayRayShark,
-  BrownRayShark,
-  GreenRayShark,
-  RedRayShark,
-  OrangeRayShark,
-  PurpleRayShark,
-  SilverRayShark,
-  GoldRayShark,
-  CopperRayShark,
-  BronzeRayShark,
-  IronRayShark,
-  SteelRayShark,
-  TitaniumRayShark,
-  AluminumRayShark,
-  ChromeRayShark,
-  NickelRayShark,
-  ZincRayShark,
-  TinRayShark,
-  LeadRayShark,
-  MercuryRayShark,
-  PlatinumRayShark,
-  PalladiumRayShark,
-  RhodiumRayShark,
-  IridiumRayShark,
-  OsmiumRayShark,
-  RutheniumRayShark,
-  RheniumRayShark,
-  TungstenRayShark,
-  TantalumRayShark,
-  HafniumRayShark,
-  ZirconiumRayShark,
-  NiobiumRayShark,
-  MolybdenumRayShark,
-  TechnetiumRayShark,
-  RutherfordiumRayShark,
-  DubniumRayShark,
-  SeaborgiumRayShark,
-  BohriumRayShark,
-  HassiumRayShark,
-  MeitneriumRayShark,
-  DarmstadtiumRayShark,
-  RoentgeniumRayShark,
-  CoperniciumRayShark,
-  NihoniumRayShark,
-  FleroviumRayShark,
-  MoscoviumRayShark,
-  LivermoriumRayShark,
-  TennessineRayShark,
-  OganessonRayShark
+  Database,
+  Presentation,
+  Calendar,
+  Mail,
+  Link,
+  ExternalLink,
+  Copy,
+  Save,
+  Bookmark,
+  Flag,
+  MessageSquare,
+  Target,
+  Award,
+  TrendingUp,
+  Users,
+  Building,
+  GraduationCap,
+  Briefcase
 } from 'lucide-react';
 
 interface Document {
   id: string;
   name: string;
-  type: 'pdf' | 'word' | 'excel' | 'powerpoint' | 'image' | 'text' | 'other';
+  type: 'pdf' | 'word' | 'excel' | 'powerpoint' | 'image' | 'video' | 'audio' | 'text' | 'other';
   size: number;
   uploadDate: Date;
   lastModified: Date;
+  status: 'processing' | 'completed' | 'failed' | 'analyzing';
   uploadedBy: string;
-  folderId?: string;
+  folder?: string;
   tags: string[];
-  status: 'processing' | 'completed' | 'error' | 'draft';
-  summary?: DocumentSummary;
-  analysis?: DocumentAnalysis;
+  summary?: string;
+  keyPoints?: string[];
+  aiModel?: string;
+  processingCost?: number;
+  confidence?: number;
+  language?: string;
+  pageCount?: number;
+  wordCount?: number;
   isStarred: boolean;
   isShared: boolean;
-  permissions: 'private' | 'team' | 'public';
-  version: number;
-  originalUrl?: string;
-  thumbnailUrl?: string;
-}
-
-interface DocumentSummary {
-  overview: string;
-  keyPoints: string[];
-  wordCount: number;
-  pageCount: number;
-  language: string;
-  aiModel: string;
-  confidence: number;
-  extractedData?: any;
-}
-
-interface DocumentAnalysis {
-  sentiment: 'positive' | 'neutral' | 'negative';
-  topics: string[];
-  entities: string[];
-  readabilityScore: number;
-  complexity: 'low' | 'medium' | 'high';
-  recommendations: string[];
+  sharedWith?: string[];
+  permissions: 'owner' | 'editor' | 'viewer';
+  category: 'research' | 'report' | 'presentation' | 'contract' | 'manual' | 'other';
 }
 
 interface Folder {
   id: string;
   name: string;
-  parentId?: string;
-  color: string;
   documentCount: number;
   createdDate: Date;
-  isShared: boolean;
+  color: string;
+  isExpanded?: boolean;
 }
 
 const Documents: React.FC = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'size' | 'type'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [filterBy, setFilterBy] = useState<'all' | 'processing' | 'completed' | 'failed'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
-  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
-  const [showBulkActions, setShowBulkActions] = useState(false);
-  const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mock data
-  const mockFolders: Folder[] = [
-    {
-      id: '1',
-      name: 'งานวิจัย',
-      color: 'bg-blue-500',
-      documentCount: 12,
-      createdDate: new Date('2024-01-10'),
-      isShared: false
-    },
-    {
-      id: '2',
-      name: 'รายงานประจำเดือน',
-      color: 'bg-green-500',
-      documentCount: 8,
-      createdDate: new Date('2024-01-15'),
-      isShared: true
-    },
-    {
-      id: '3',
-      name: 'เอกสารสำคัญ',
-      color: 'bg-purple-500',
-      documentCount: 5,
-      createdDate: new Date('2024-01-20'),
-      isShared: false
-    }
-  ];
-
   const mockDocuments: Document[] = [
     {
       id: '1',
-      name: 'รายงานการวิจัย AI in Education.pdf',
+      name: 'รายงานการวิจัย AI in Education 2024.pdf',
       type: 'pdf',
-      size: 2048000,
+      size: 2500000,
       uploadDate: new Date('2024-01-15T10:30:00'),
       lastModified: new Date('2024-01-15T10:30:00'),
-      uploadedBy: 'คุณสมชาย',
-      folderId: '1',
-      tags: ['วิจัย', 'AI', 'การศึกษา'],
       status: 'completed',
+      uploadedBy: 'คุณสมชาย',
+      folder: 'งานวิจัย',
+      tags: ['AI', 'การศึกษา', 'วิจัย', '2024'],
+      summary: 'รายงานการวิจัยเกี่ยวกับการใช้ AI ในระบบการศึกษาไทย พบว่า AI สามารถช่วยเพิ่มประสิทธิภาพการเรียนการสอนได้ถึง 40%',
+      keyPoints: [
+        'AI ช่วยเพิ่มประสิทธิภาพการเรียนการสอน 40%',
+        'ลดเวลาการตรวจงานของครูลง 60%',
+        'นักเรียนมีความพึงพอใจเพิ่มขึ้น 25%'
+      ],
+      aiModel: 'Claude 3.5 Sonnet',
+      processingCost: 0.85,
+      confidence: 92,
+      language: 'th',
+      pageCount: 45,
+      wordCount: 12500,
       isStarred: true,
       isShared: false,
-      permissions: 'team',
-      version: 1,
-      summary: {
-        overview: 'การศึกษาวิจัยเกี่ยวกับการประยุกต์ใช้ปัญญาประดิษฐ์ในระบบการศึกษาไทย พบว่าสามารถเพิ่มประสิทธิภาพการเรียนรู้ได้อย่างมีนัยสำคัญ',
-        keyPoints: [
-          'AI สามารถปรับการเรียนรู้ให้เหมาะกับผู้เรียนแต่ละคน',
-          'ลดเวลาการให้คำปรึกษาของครูได้ 40%',
-          'เพิ่มผลการเรียนเฉลี่ย 25%'
-        ],
-        wordCount: 15420,
-        pageCount: 45,
-        language: 'th',
-        aiModel: 'Claude 3.5 Sonnet',
-        confidence: 94
-      },
-      analysis: {
-        sentiment: 'positive',
-        topics: ['ปัญญาประดิษฐ์', 'การศึกษา', 'เทคโนโลยี', 'นวัตกรรม'],
-        entities: ['มหาวิทยาลัย', 'นักเรียน', 'ครู', 'ระบบการศึกษา'],
-        readabilityScore: 78,
-        complexity: 'medium',
-        recommendations: [
-          'เพิ่มตัวอย่างการใช้งานจริง',
-          'อธิบายเทคนิคให้เข้าใจง่ายขึ้น',
-          'เพิ่มกราฟและแผนภูมิประกอบ'
-        ]
-      }
+      permissions: 'owner',
+      category: 'research'
     },
     {
       id: '2',
-      name: 'งบประมาณ Q4 2024.xlsx',
-      type: 'excel',
-      size: 512000,
-      uploadDate: new Date('2024-01-20T14:15:00'),
-      lastModified: new Date('2024-01-22T09:45:00'),
-      uploadedBy: 'คุณปัทมา',
-      folderId: '2',
-      tags: ['งบประมาณ', 'Q4', 'การเงิน'],
+      name: 'แผนกลยุทธ์ดิจิทัล 2025-2027.docx',
+      type: 'word',
+      size: 1800000,
+      uploadDate: new Date('2024-01-14T14:20:00'),
+      lastModified: new Date('2024-01-14T16:45:00'),
       status: 'completed',
+      uploadedBy: 'คุณปัทมา',
+      folder: 'แผนงาน',
+      tags: ['กลยุทธ์', 'ดิจิทัล', 'แผน', '2025'],
+      summary: 'แผนกลยุทธ์การเปลี่ยนผ่านสู่ดิจิทัลขององค์กร ครอบคลุมการลงทุนในเทคโนโลยี การพัฒนาบุคลากร และการปรับปรุงกระบวนการทำงาน',
+      keyPoints: [
+        'งบประมาณลงทุน IT 50 ล้านบาท',
+        'อบรมพนักงาน Digital Skills 100%',
+        'ปรับปรุงระบบงานหลัก 15 ระบบ'
+      ],
+      aiModel: 'GPT-4',
+      processingCost: 0.65,
+      confidence: 88,
+      language: 'th',
+      pageCount: 28,
+      wordCount: 8900,
       isStarred: false,
       isShared: true,
-      permissions: 'team',
-      version: 3,
-      summary: {
-        overview: 'รายงานงบประมาณไตรมาส 4 ปี 2024 แสดงรายได้เพิ่มขึ้น 15% และค่าใช้จ่ายลดลง 8% เมื่อเทียบกับปีที่แล้ว',
-        keyPoints: [
-          'รายได้รวม 12.5 ล้านบาท',
-          'กำไรสุทธิ 2.8 ล้านบาท',
-          'ค่าใช้จ่าย IT ลดลง 12%'
-        ],
-        wordCount: 0,
-        pageCount: 15,
-        language: 'th',
-        aiModel: 'GPT-4',
-        confidence: 89
-      }
+      sharedWith: ['คุณอนุชา', 'คุณวิชัย'],
+      permissions: 'owner',
+      category: 'report'
     },
     {
       id: '3',
-      name: 'นโยบายการทำงานจากที่บ้าน.docx',
-      type: 'word',
-      size: 256000,
-      uploadDate: new Date('2024-01-25T11:20:00'),
-      lastModified: new Date('2024-01-25T11:20:00'),
-      uploadedBy: 'คุณอนุชา',
-      folderId: '3',
-      tags: ['นโยบาย', 'WFH', 'HR'],
+      name: 'การนำเสนอผลงาน Q4 2024.pptx',
+      type: 'powerpoint',
+      size: 5200000,
+      uploadDate: new Date('2024-01-13T09:15:00'),
+      lastModified: new Date('2024-01-13T11:30:00'),
       status: 'processing',
+      uploadedBy: 'คุณอนุชา',
+      folder: 'การนำเสนอ',
+      tags: ['Q4', 'ผลงาน', 'การนำเสนอ'],
       isStarred: false,
       isShared: false,
-      permissions: 'private',
-      version: 1
+      permissions: 'owner',
+      category: 'presentation'
+    },
+    {
+      id: '4',
+      name: 'สัญญาจ้างที่ปรึกษา AI.pdf',
+      type: 'pdf',
+      size: 890000,
+      uploadDate: new Date('2024-01-12T16:00:00'),
+      lastModified: new Date('2024-01-12T16:00:00'),
+      status: 'completed',
+      uploadedBy: 'คุณสุดา',
+      folder: 'สัญญา',
+      tags: ['สัญญา', 'ที่ปรึกษา', 'AI'],
+      summary: 'สัญญาจ้างที่ปรึกษาด้าน AI เพื่อพัฒนาระบบอัจฉริยะขององค์กร ระยะเวลา 12 เดือน งบประมาณ 2.5 ล้านบาท',
+      keyPoints: [
+        'ระยะเวลาสัญญา 12 เดือน',
+        'งบประมาณ 2.5 ล้านบาท',
+        'ส่งมอบระบบ AI 3 ระบบ'
+      ],
+      aiModel: 'Claude 3.5 Sonnet',
+      processingCost: 0.35,
+      confidence: 95,
+      language: 'th',
+      pageCount: 12,
+      wordCount: 3200,
+      isStarred: false,
+      isShared: true,
+      sharedWith: ['คุณสมชาย'],
+      permissions: 'owner',
+      category: 'contract'
     }
   ];
 
+  const mockFolders: Folder[] = [
+    { id: '1', name: 'งานวิจัย', documentCount: 15, createdDate: new Date('2024-01-01'), color: 'bg-blue-500', isExpanded: true },
+    { id: '2', name: 'แผนงาน', documentCount: 8, createdDate: new Date('2024-01-05'), color: 'bg-green-500', isExpanded: false },
+    { id: '3', name: 'การนำเสนอ', documentCount: 12, createdDate: new Date('2024-01-10'), color: 'bg-purple-500', isExpanded: false },
+    { id: '4', name: 'สัญญา', documentCount: 6, createdDate: new Date('2024-01-12'), color: 'bg-orange-500', isExpanded: false },
+    { id: '5', name: 'คู่มือ', documentCount: 20, createdDate: new Date('2024-01-08'), color: 'bg-red-500', isExpanded: false }
+  ];
+
   React.useEffect(() => {
-    setFolders(mockFolders);
     setDocuments(mockDocuments);
+    setFolders(mockFolders);
   }, []);
 
   const getFileIcon = (type: string) => {
     switch (type) {
-      case 'pdf': return <FileText className="h-8 w-8 text-red-500" />;
-      case 'word': return <FileText className="h-8 w-8 text-blue-500" />;
-      case 'excel': return <FileSpreadsheet className="h-8 w-8 text-green-500" />;
-      case 'powerpoint': return <FileText className="h-8 w-8 text-orange-500" />;
-      case 'image': return <FileImage className="h-8 w-8 text-purple-500" />;
-      case 'video': return <FileVideo className="h-8 w-8 text-pink-500" />;
-      case 'audio': return <FileAudio className="h-8 w-8 text-yellow-500" />;
-      default: return <FileText className="h-8 w-8 text-gray-500" />;
+      case 'pdf':
+        return <FileText className="h-5 w-5 text-red-500" />;
+      case 'word':
+        return <FileText className="h-5 w-5 text-blue-500" />;
+      case 'excel':
+        return <FileText className="h-5 w-5 text-green-500" />;
+      case 'powerpoint':
+        return <Presentation className="h-5 w-5 text-orange-500" />;
+      case 'image':
+        return <Image className="h-5 w-5 text-purple-500" />;
+      case 'video':
+        return <Video className="h-5 w-5 text-pink-500" />;
+      case 'audio':
+        return <Music className="h-5 w-5 text-indigo-500" />;
+      default:
+        return <File className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'processing':
+        return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
+      case 'analyzing':
+        return <Brain className="h-4 w-4 text-purple-500 animate-pulse" />;
+      case 'failed':
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
 
@@ -666,13 +275,79 @@ const Documents: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'processing': return 'bg-yellow-100 text-yellow-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const handleFileUpload = useCallback((files: FileList) => {
+    Array.from(files).forEach((file) => {
+      const newDoc: Document = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        name: file.name,
+        type: getFileType(file.name),
+        size: file.size,
+        uploadDate: new Date(),
+        lastModified: new Date(),
+        status: 'processing',
+        uploadedBy: 'คุณ',
+        folder: selectedFolder || undefined,
+        tags: [],
+        isStarred: false,
+        isShared: false,
+        permissions: 'owner',
+        category: 'other'
+      };
+
+      setDocuments(prev => [...prev, newDoc]);
+      
+      // Simulate upload progress
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 20;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          // Simulate processing completion
+          setTimeout(() => {
+            setDocuments(prev => prev.map(doc => 
+              doc.id === newDoc.id 
+                ? { ...doc, status: 'completed', summary: 'เอกสารได้รับการวิเคราะห์เรียบร้อยแล้ว' }
+                : doc
+            ));
+          }, 2000);
+        }
+        setUploadProgress(prev => ({ ...prev, [newDoc.id]: progress }));
+      }, 500);
+    });
+  }, [selectedFolder]);
+
+  const getFileType = (filename: string): Document['type'] => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf':
+        return 'pdf';
+      case 'doc':
+      case 'docx':
+        return 'word';
+      case 'xls':
+      case 'xlsx':
+        return 'excel';
+      case 'ppt':
+      case 'pptx':
+        return 'powerpoint';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return 'image';
+      case 'mp4':
+      case 'avi':
+      case 'mov':
+        return 'video';
+      case 'mp3':
+      case 'wav':
+      case 'flac':
+        return 'audio';
+      case 'txt':
+        return 'text';
+      default:
+        return 'other';
     }
   };
 
@@ -689,862 +364,617 @@ const Documents: React.FC = () => {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    handleFileUpload(files);
-  }, []);
-
-  const handleFileUpload = (files: File[]) => {
-    files.forEach((file) => {
-      const fileId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-      
-      // Simulate upload progress
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 30;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-          
-          // Add document after upload complete
-          const newDocument: Document = {
-            id: fileId,
-            name: file.name,
-            type: getFileType(file.name),
-            size: file.size,
-            uploadDate: new Date(),
-            lastModified: new Date(),
-            uploadedBy: 'คุณ',
-            folderId: selectedFolder || undefined,
-            tags: [],
-            status: 'processing',
-            isStarred: false,
-            isShared: false,
-            permissions: 'private',
-            version: 1
-          };
-          
-          setDocuments(prev => [...prev, newDocument]);
-          
-          // Simulate processing
-          setTimeout(() => {
-            setDocuments(prev => prev.map(doc => 
-              doc.id === fileId ? { ...doc, status: 'completed' } : doc
-            ));
-          }, 2000);
-        }
-        
-        setUploadProgress(prev => ({ ...prev, [fileId]: progress }));
-      }, 200);
-    });
-  };
-
-  const getFileType = (filename: string): Document['type'] => {
-    const ext = filename.split('.').pop()?.toLowerCase();
-    switch (ext) {
-      case 'pdf': return 'pdf';
-      case 'doc':
-      case 'docx': return 'word';
-      case 'xls':
-      case 'xlsx': return 'excel';
-      case 'ppt':
-      case 'pptx': return 'powerpoint';
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif': return 'image';
-      case 'mp4':
-      case 'avi':
-      case 'mov': return 'video';
-      case 'mp3':
-      case 'wav': return 'audio';
-      case 'txt': return 'text';
-      default: return 'other';
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileUpload(files);
     }
-  };
+  }, [handleFileUpload]);
 
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          doc.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesType = filterType === 'all' || doc.type === filterType;
-    const matchesStatus = filterStatus === 'all' || doc.status === filterStatus;
-    const matchesFolder = !selectedFolder || doc.folderId === selectedFolder;
+    const matchesFilter = filterBy === 'all' || doc.status === filterBy;
+    const matchesFolder = !selectedFolder || doc.folder === selectedFolder;
+    const matchesCategory = selectedCategory === 'all' || doc.category === selectedCategory;
     
-    return matchesSearch && matchesType && matchesStatus && matchesFolder;
+    return matchesSearch && matchesFilter && matchesFolder && matchesCategory;
   });
 
   const sortedDocuments = [...filteredDocuments].sort((a, b) => {
-    let comparison = 0;
-    
     switch (sortBy) {
       case 'name':
-        comparison = a.name.localeCompare(b.name);
-        break;
+        return a.name.localeCompare(b.name);
       case 'date':
-        comparison = a.uploadDate.getTime() - b.uploadDate.getTime();
-        break;
+        return b.uploadDate.getTime() - a.uploadDate.getTime();
       case 'size':
-        comparison = a.size - b.size;
-        break;
+        return b.size - a.size;
       case 'type':
-        comparison = a.type.localeCompare(b.type);
-        break;
+        return a.type.localeCompare(b.type);
+      default:
+        return 0;
     }
-    
-    return sortOrder === 'asc' ? comparison : -comparison;
   });
 
-  const handleDocumentSelect = (docId: string) => {
-    setSelectedDocuments(prev => 
-      prev.includes(docId) 
-        ? prev.filter(id => id !== docId)
-        : [...prev, docId]
-    );
+  const handleCreateFolder = () => {
+    if (newFolderName.trim()) {
+      const newFolder: Folder = {
+        id: Date.now().toString(),
+        name: newFolderName.trim(),
+        documentCount: 0,
+        createdDate: new Date(),
+        color: 'bg-gray-500',
+        isExpanded: false
+      };
+      setFolders(prev => [...prev, newFolder]);
+      setNewFolderName('');
+      setShowNewFolderModal(false);
+    }
   };
 
-  const handleBulkAction = (action: string) => {
-    switch (action) {
-      case 'delete':
-        setDocuments(prev => prev.filter(doc => !selectedDocuments.includes(doc.id)));
-        break;
-      case 'star':
-        setDocuments(prev => prev.map(doc => 
-          selectedDocuments.includes(doc.id) ? { ...doc, isStarred: true } : doc
-        ));
-        break;
-      case 'share':
-        setDocuments(prev => prev.map(doc => 
-          selectedDocuments.includes(doc.id) ? { ...doc, isShared: true } : doc
-        ));
-        break;
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'research':
+        return <GraduationCap className="h-4 w-4" />;
+      case 'report':
+        return <BarChart3 className="h-4 w-4" />;
+      case 'presentation':
+        return <Presentation className="h-4 w-4" />;
+      case 'contract':
+        return <Building className="h-4 w-4" />;
+      case 'manual':
+        return <BookOpen className="h-4 w-4" />;
+      default:
+        return <FileText className="h-4 w-4" />;
     }
-    setSelectedDocuments([]);
-    setShowBulkActions(false);
+  };
+
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'research':
+        return 'งานวิจัย';
+      case 'report':
+        return 'รายงาน';
+      case 'presentation':
+        return 'การนำเสนอ';
+      case 'contract':
+        return 'สัญญา';
+      case 'manual':
+        return 'คู่มือ';
+      default:
+        return 'อื่นๆ';
+    }
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-              <FileText className="h-7 w-7 mr-3 text-blue-600" />
-              เอกสาร
-            </h1>
-            <p className="text-gray-600 text-sm mt-1">จัดการ วิเคราะห์ และสรุปเอกสารด้วย AI</p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setShowNewFolderModal(true)}
-              className="flex items-center px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <FolderOpen className="h-4 w-4 mr-2" />
-              โฟลเดอร์ใหม่
-            </button>
-            <button
-              onClick={() => setShowUploadModal(true)}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              อัปโหลดไฟล์
-            </button>
-          </div>
+    <div className="h-full flex bg-gray-50">
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+            <FileText className="h-5 w-5 mr-2 text-blue-600" />
+            เอกสาร
+          </h2>
         </div>
 
-        {/* Search and Filters */}
-        <div className="flex items-center space-x-4 mt-4">
-          <div className="flex-1 relative">
-            <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="ค้นหาเอกสาร..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          
-          <select 
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {/* Quick Actions */}
+        <div className="p-4 space-y-2">
+          <button
+            onClick={() => setShowUploadModal(true)}
+            className="w-full flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            <option value="all">ทุกประเภท</option>
-            <option value="pdf">PDF</option>
-            <option value="word">Word</option>
-            <option value="excel">Excel</option>
-            <option value="powerpoint">PowerPoint</option>
-            <option value="image">รูปภาพ</option>
-          </select>
-
-          <select 
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            <Upload className="h-4 w-4 mr-2" />
+            อัปโหลดเอกสาร
+          </button>
+          <button
+            onClick={() => setShowNewFolderModal(true)}
+            className="w-full flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
           >
-            <option value="all">ทุกสถานะ</option>
-            <option value="completed">เสร็จสิ้น</option>
-            <option value="processing">กำลังประมวลผล</option>
-            <option value="error">ข้อผิดพลาด</option>
-            <option value="draft">ร่าง</option>
-          </select>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              <Grid className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              <List className="h-5 w-5" />
-            </button>
-          </div>
+            <FolderPlus className="h-4 w-4 mr-2" />
+            สร้างโฟลเดอร์
+          </button>
         </div>
 
-        {/* Bulk Actions */}
-        {selectedDocuments.length > 0 && (
-          <div className="flex items-center justify-between mt-4 p-3 bg-blue-50 rounded-lg">
-            <span className="text-sm text-blue-800">
-              เลือกแล้ว {selectedDocuments.length} ไฟล์
-            </span>
-            <div className="flex items-center space-x-2">
+        {/* Folders */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4">
+            <h3 className="text-sm font-medium text-gray-500 mb-3">โฟลเดอร์</h3>
+            <div className="space-y-1">
               <button
-                onClick={() => handleBulkAction('star')}
-                className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors text-sm"
+                onClick={() => setSelectedFolder(null)}
+                className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors ${
+                  selectedFolder === null ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
               >
-                <Star className="h-4 w-4 mr-1 inline" />
-                ติดดาว
+                <Folder className="h-4 w-4 mr-2" />
+                <span className="flex-1 text-left">ทั้งหมด</span>
+                <span className="text-xs text-gray-500">{documents.length}</span>
               </button>
-              <button
-                onClick={() => handleBulkAction('share')}
-                className="px-3 py-1 bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors text-sm"
-              >
-                <Share2 className="h-4 w-4 mr-1 inline" />
-                แชร์
-              </button>
-              <button
-                onClick={() => handleBulkAction('delete')}
-                className="px-3 py-1 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors text-sm"
-              >
-                <Trash2 className="h-4 w-4 mr-1 inline" />
-                ลบ
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar - Folders */}
-        <div className="w-64 bg-white border-r border-gray-200 p-4 overflow-y-auto">
-          <div className="space-y-2">
-            <button
-              onClick={() => setSelectedFolder(null)}
-              className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-colors ${
-                !selectedFolder ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <Folder className="h-5 w-5 mr-3" />
-              <span>ทั้งหมด</span>
-              <span className="ml-auto text-sm text-gray-500">
-                {documents.length}
-              </span>
-            </button>
-
-            <button
-              className="w-full flex items-center px-3 py-2 text-left rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-            >
-              <Star className="h-5 w-5 mr-3 text-yellow-500" />
-              <span>ติดดาว</span>
-              <span className="ml-auto text-sm text-gray-500">
-                {documents.filter(d => d.isStarred).length}
-              </span>
-            </button>
-
-            <button
-              className="w-full flex items-center px-3 py-2 text-left rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-            >
-              <Share2 className="h-5 w-5 mr-3 text-green-500" />
-              <span>แชร์แล้ว</span>
-              <span className="ml-auto text-sm text-gray-500">
-                {documents.filter(d => d.isShared).length}
-              </span>
-            </button>
-
-            <div className="border-t border-gray-200 pt-4 mt-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-2">โฟลเดอร์</h3>
+              
               {folders.map((folder) => (
                 <button
                   key={folder.id}
-                  onClick={() => setSelectedFolder(folder.id)}
-                  className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-colors ${
-                    selectedFolder === folder.id ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                  onClick={() => setSelectedFolder(folder.name)}
+                  className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors ${
+                    selectedFolder === folder.name ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  <div className={`w-4 h-4 rounded mr-3 ${folder.color}`} />
-                  <span className="flex-1 truncate">{folder.name}</span>
-                  <span className="text-sm text-gray-500">{folder.documentCount}</span>
+                  <div className={`w-4 h-4 rounded mr-2 ${folder.color}`} />
+                  <span className="flex-1 text-left">{folder.name}</span>
+                  <span className="text-xs text-gray-500">{folder.documentCount}</span>
                 </button>
               ))}
             </div>
+          </div>
 
-            {/* Quick Stats */}
-            <div className="border-t border-gray-200 pt-4 mt-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">สถิติ</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">ไฟล์ทั้งหมด</span>
-                  <span className="font-medium">{documents.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">ขนาดรวม</span>
-                  <span className="font-medium">
-                    {formatFileSize(documents.reduce((sum, doc) => sum + doc.size, 0))}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">วิเคราะห์แล้ว</span>
-                  <span className="font-medium">
-                    {documents.filter(d => d.status === 'completed').length}
-                  </span>
-                </div>
-              </div>
+          {/* Categories */}
+          <div className="p-4 border-t border-gray-200">
+            <h3 className="text-sm font-medium text-gray-500 mb-3">หมวดหมู่</h3>
+            <div className="space-y-1">
+              {[
+                { id: 'all', label: 'ทั้งหมด', icon: FileText },
+                { id: 'research', label: 'งานวิจัย', icon: GraduationCap },
+                { id: 'report', label: 'รายงาน', icon: BarChart3 },
+                { id: 'presentation', label: 'การนำเสนอ', icon: Presentation },
+                { id: 'contract', label: 'สัญญา', icon: Building },
+                { id: 'manual', label: 'คู่มือ', icon: BookOpen }
+              ].map((category) => {
+                const Icon = category.icon;
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors ${
+                      selectedCategory === category.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 mr-2" />
+                    <span className="flex-1 text-left">{category.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Document Grid/List */}
-          <div 
-            className="flex-1 p-6 overflow-y-auto"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            {dragOver && (
-              <div className="fixed inset-0 bg-blue-500 bg-opacity-20 border-4 border-dashed border-blue-500 flex items-center justify-center z-50">
-                <div className="bg-white p-8 rounded-xl shadow-lg text-center">
-                  <Upload className="h-16 w-16 text-blue-500 mx-auto mb-4" />
-                  <p className="text-xl font-semibold text-gray-900">วางไฟล์ที่นี่</p>
-                  <p className="text-gray-600">เพื่ออัปโหลดและวิเคราะห์ด้วย AI</p>
-                </div>
-              </div>
-            )}
-
-            {sortedDocuments.length === 0 ? (
-              <div className="text-center py-12">
-                <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">ไม่มีเอกสาร</h3>
-                <p className="text-gray-600 mb-6">เริ่มต้นด้วยการอัปโหลดเอกสารแรกของคุณ</p>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {selectedFolder ? `โฟลเดอร์: ${selectedFolder}` : 'เอกสารทั้งหมด'}
+              </h1>
+              <p className="text-gray-600 text-sm mt-1">
+                จัดการและวิเคราะห์เอกสารด้วย AI
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
                 <button
-                  onClick={() => setShowUploadModal(true)}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-md transition-colors ${
+                    viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
+                  }`}
                 >
-                  อัปโหลดไฟล์
+                  <FileText className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-md transition-colors ${
+                    viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
+                  }`}
+                >
+                  <Archive className="h-4 w-4" />
                 </button>
               </div>
-            ) : (
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-2'}>
-                {sortedDocuments.map((document) => (
-                  <div
-                    key={document.id}
-                    className={`bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all cursor-pointer ${
-                      selectedDocuments.includes(document.id) ? 'ring-2 ring-blue-500' : ''
-                    } ${viewMode === 'list' ? 'flex items-center p-4' : 'p-6'}`}
-                    onClick={() => setSelectedDocument(document)}
-                  >
-                    {viewMode === 'grid' ? (
-                      <>
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-2">
-                            {getFileIcon(document.type)}
-                            <input
-                              type="checkbox"
-                              checked={selectedDocuments.includes(document.id)}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handleDocumentSelect(document.id);
-                              }}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            />
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            {document.isStarred && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
-                            {document.isShared && <Share2 className="h-4 w-4 text-green-500" />}
-                            <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
+            </div>
+          </div>
 
-                        <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{document.name}</h3>
+          {/* Search and Filters */}
+          <div className="flex items-center space-x-4">
+            <div className="flex-1 relative">
+              <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="ค้นหาเอกสาร..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="date">เรียงตามวันที่</option>
+              <option value="name">เรียงตามชื่อ</option>
+              <option value="size">เรียงตามขนาด</option>
+              <option value="type">เรียงตามประเภท</option>
+            </select>
+
+            <select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">ทั้งหมด</option>
+              <option value="completed">เสร็จสิ้น</option>
+              <option value="processing">กำลังประมวลผล</option>
+              <option value="failed">ล้มเหลว</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Document List */}
+        <div 
+          className={`flex-1 overflow-y-auto p-6 ${dragOver ? 'bg-blue-50' : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          {dragOver && (
+            <div className="fixed inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-dashed border-blue-500">
+                <Upload className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+                <p className="text-lg font-medium text-gray-900 text-center">วางไฟล์ที่นี่เพื่ออัปโหลด</p>
+              </div>
+            </div>
+          )}
+
+          {sortedDocuments.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">ไม่พบเอกสาร</h3>
+              <p className="text-gray-600 mb-6">เริ่มต้นด้วยการอัปโหลดเอกสารแรกของคุณ</p>
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                อัปโหลดเอกสาร
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sortedDocuments.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => setSelectedDocument(doc)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-4 flex-1">
+                      <div className="flex-shrink-0">
+                        {getFileIcon(doc.type)}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <h3 className="text-lg font-medium text-gray-900 truncate">{doc.name}</h3>
+                          {doc.isStarred && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
+                          {doc.isShared && <Users className="h-4 w-4 text-blue-500" />}
+                          {getStatusIcon(doc.status)}
+                        </div>
                         
-                        <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
-                          <span>{formatFileSize(document.size)}</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(document.status)}`}>
-                            {document.status === 'completed' ? 'เสร็จสิ้น' : 
-                             document.status === 'processing' ? 'กำลังประมวลผล' : 
-                             document.status === 'error' ? 'ข้อผิดพลาด' : 'ร่าง'}
+                        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
+                          <span className="flex items-center">
+                            <User className="h-4 w-4 mr-1" />
+                            {doc.uploadedBy}
+                          </span>
+                          <span className="flex items-center">
+                            <Clock className="h-4 w-4 mr-1" />
+                            {doc.uploadDate.toLocaleDateString('th-TH')}
+                          </span>
+                          <span>{formatFileSize(doc.size)}</span>
+                          {doc.pageCount && <span>{doc.pageCount} หน้า</span>}
+                          <span className="flex items-center">
+                            {getCategoryIcon(doc.category)}
+                            <span className="ml-1">{getCategoryLabel(doc.category)}</span>
                           </span>
                         </div>
 
-                        <div className="flex items-center text-xs text-gray-500 mb-3">
-                          <User className="h-3 w-3 mr-1" />
-                          <span className="mr-3">{document.uploadedBy}</span>
-                          <Calendar className="h-3 w-3 mr-1" />
-                          <span>{document.uploadDate.toLocaleDateString('th-TH')}</span>
-                        </div>
+                        {doc.summary && (
+                          <p className="text-sm text-gray-700 mb-3 line-clamp-2">{doc.summary}</p>
+                        )}
 
-                        {document.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {document.tags.slice(0, 2).map((tag, index) => (
+                        {doc.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {doc.tags.map((tag, index) => (
                               <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                                 {tag}
                               </span>
                             ))}
-                            {document.tags.length > 2 && (
-                              <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                                +{document.tags.length - 2}
-                              </span>
-                            )}
                           </div>
                         )}
 
-                        {document.summary && (
-                          <p className="text-sm text-gray-600 line-clamp-2">{document.summary.overview}</p>
+                        {doc.status === 'completed' && doc.confidence && (
+                          <div className="flex items-center space-x-4 text-xs text-gray-500">
+                            <span className="flex items-center">
+                              <Brain className="h-3 w-3 mr-1" />
+                              {doc.aiModel}
+                            </span>
+                            <span>ความแม่นยำ: {doc.confidence}%</span>
+                            {doc.processingCost && <span>ค่าใช้จ่าย: ฿{doc.processingCost.toFixed(2)}</span>}
+                          </div>
                         )}
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="checkbox"
-                            checked={selectedDocuments.includes(document.id)}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              handleDocumentSelect(document.id);
-                            }}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          {getFileIcon(document.type)}
-                        </div>
 
-                        <div className="flex-1 min-w-0 mx-4">
-                          <h3 className="font-medium text-gray-900 truncate">{document.name}</h3>
-                          <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                            <span>{formatFileSize(document.size)}</span>
-                            <span>{document.uploadedBy}</span>
-                            <span>{document.uploadDate.toLocaleDateString('th-TH')}</span>
+                        {doc.status === 'processing' && uploadProgress[doc.id] && (
+                          <div className="mt-2">
+                            <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                              <span>กำลังประมวลผล...</span>
+                              <span>{Math.round(uploadProgress[doc.id])}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${uploadProgress[doc.id]}%` }}
+                              />
+                            </div>
                           </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(document.status)}`}>
-                            {document.status === 'completed' ? 'เสร็จสิ้น' : 
-                             document.status === 'processing' ? 'กำลังประมวลผล' : 
-                             document.status === 'error' ? 'ข้อผิดพลาด' : 'ร่าง'}
-                          </span>
-                          {document.isStarred && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
-                          {document.isShared && <Share2 className="h-4 w-4 text-green-500" />}
-                          <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Document Detail Sidebar */}
-        {selectedDocument && (
-          <div className="w-96 bg-white border-l border-gray-200 overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">รายละเอียดเอกสาร</h2>
-                <button 
-                  onClick={() => setSelectedDocument(null)}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                {/* Document Info */}
-                <div className="text-center">
-                  <div className="mb-4">
-                    {getFileIcon(selectedDocument.type)}
-                  </div>
-                  <h3 className="font-medium text-gray-900 mb-2">{selectedDocument.name}</h3>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <div className="flex justify-between">
-                      <span>ขนาด:</span>
-                      <span>{formatFileSize(selectedDocument.size)}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>อัปโหลดโดย:</span>
-                      <span>{selectedDocument.uploadedBy}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>วันที่อัปโหลด:</span>
-                      <span>{selectedDocument.uploadDate.toLocaleDateString('th-TH')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>เวอร์ชัน:</span>
-                      <span>v{selectedDocument.version}</span>
+
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDocuments(prev => prev.map(d => 
+                            d.id === doc.id ? { ...d, isStarred: !d.isStarred } : d
+                          ));
+                        }}
+                        className={`p-2 rounded-lg transition-colors ${
+                          doc.isStarred ? 'text-yellow-500 hover:bg-yellow-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <Star className={`h-4 w-4 ${doc.isStarred ? 'fill-current' : ''}`} />
+                      </button>
+                      <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                        <Share2 className="h-4 w-4" />
+                      </button>
+                      <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                        <Download className="h-4 w-4" />
+                      </button>
+                      <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
-
-                {/* Status */}
-                <div className="text-center">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedDocument.status)}`}>
-                    {selectedDocument.status === 'completed' ? 'เสร็จสิ้น' : 
-                     selectedDocument.status === 'processing' ? 'กำลังประมวลผล' : 
-                     selectedDocument.status === 'error' ? 'ข้อผิดพลาด' : 'ร่าง'}
-                  </span>
-                </div>
-
-                {/* Tags */}
-                {selectedDocument.tags.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">แท็ก</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedDocument.tags.map((tag, index) => (
-                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* AI Summary */}
-                {selectedDocument.summary && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                      <Brain className="h-4 w-4 mr-2 text-purple-600" />
-                      สรุปด้วย AI
-                      <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                        {selectedDocument.summary.confidence}% แม่นยำ
-                      </span>
-                    </h4>
-                    <div className="space-y-3">
-                      <div>
-                        <h5 className="text-xs font-medium text-gray-700 mb-1">ภาพรวม</h5>
-                        <p className="text-sm text-gray-600">{selectedDocument.summary.overview}</p>
-                      </div>
-                      
-                      {selectedDocument.summary.keyPoints.length > 0 && (
-                        <div>
-                          <h5 className="text-xs font-medium text-gray-700 mb-2">ประเด็นสำคัญ</h5>
-                          <ul className="space-y-1">
-                            {selectedDocument.summary.keyPoints.map((point, index) => (
-                              <li key={index} className="text-sm text-gray-600 flex items-start">
-                                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 mr-2 flex-shrink-0" />
-                                {point}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-2 gap-4 text-xs">
-                        <div>
-                          <span className="text-gray-600">จำนวนคำ:</span>
-                          <span className="ml-1 font-medium">{selectedDocument.summary.wordCount.toLocaleString()}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">จำนวนหน้า:</span>
-                          <span className="ml-1 font-medium">{selectedDocument.summary.pageCount}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">ภาษา:</span>
-                          <span className="ml-1 font-medium">{selectedDocument.summary.language === 'th' ? 'ไทย' : 'อังกฤษ'}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">AI Model:</span>
-                          <span className="ml-1 font-medium">{selectedDocument.summary.aiModel}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Document Analysis */}
-                {selectedDocument.analysis && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                      <BarChart3 className="h-4 w-4 mr-2 text-green-600" />
-                      การวิเคราะห์เอกสาร
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <span className="text-xs text-gray-600">ความรู้สึก:</span>
-                          <div className={`mt-1 px-2 py-1 rounded-full text-xs font-medium ${
-                            selectedDocument.analysis.sentiment === 'positive' ? 'bg-green-100 text-green-800' :
-                            selectedDocument.analysis.sentiment === 'negative' ? 'bg-red-100 text-red-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {selectedDocument.analysis.sentiment === 'positive' ? 'เชิงบวก' :
-                             selectedDocument.analysis.sentiment === 'negative' ? 'เชิงลบ' : 'เป็นกลาง'}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-600">ความซับซ้อน:</span>
-                          <div className={`mt-1 px-2 py-1 rounded-full text-xs font-medium ${
-                            selectedDocument.analysis.complexity === 'high' ? 'bg-red-100 text-red-800' :
-                            selectedDocument.analysis.complexity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {selectedDocument.analysis.complexity === 'high' ? 'สูง' :
-                             selectedDocument.analysis.complexity === 'medium' ? 'ปานกลาง' : 'ต่ำ'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="text-xs text-gray-600">คะแนนอ่านง่าย:</span>
-                        <div className="mt-1 flex items-center">
-                          <div className="flex-1 bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-blue-500 h-2 rounded-full" 
-                              style={{ width: `${selectedDocument.analysis.readabilityScore}%` }}
-                            />
-                          </div>
-                          <span className="ml-2 text-sm font-medium">{selectedDocument.analysis.readabilityScore}/100</span>
-                        </div>
-                      </div>
-
-                      {selectedDocument.analysis.topics.length > 0 && (
-                        <div>
-                          <h5 className="text-xs font-medium text-gray-700 mb-2">หัวข้อหลัก</h5>
-                          <div className="flex flex-wrap gap-1">
-                            {selectedDocument.analysis.topics.map((topic, index) => (
-                              <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
-                                {topic}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedDocument.analysis.recommendations.length > 0 && (
-                        <div>
-                          <h5 className="text-xs font-medium text-gray-700 mb-2 flex items-center">
-                            <Lightbulb className="h-3 w-3 mr-1" />
-                            ข้อเสนอแนะ
-                          </h5>
-                          <ul className="space-y-1">
-                            {selectedDocument.analysis.recommendations.map((rec, index) => (
-                              <li key={index} className="text-xs text-gray-600 flex items-start">
-                                <span className="w-1 h-1 bg-orange-500 rounded-full mt-1.5 mr-2 flex-shrink-0" />
-                                {rec}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="border-t border-gray-200 pt-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">การดำเนินการ</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button className="flex items-center justify-center px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm">
-                      <Eye className="h-4 w-4 mr-2" />
-                      ดู
-                    </button>
-                    <button className="flex items-center justify-center px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      ดาวน์โหลด
-                    </button>
-                    <button className="flex items-center justify-center px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm">
-                      <Share2 className="h-4 w-4 mr-2" />
-                      แชร์
-                    </button>
-                    <button className="flex items-center justify-center px-3 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors text-sm">
-                      <Edit3 className="h-4 w-4 mr-2" />
-                      แก้ไข
-                    </button>
-                  </div>
-                </div>
-
-                {/* AI Actions */}
-                <div className="border-t border-gray-200 pt-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                    <Zap className="h-4 w-4 mr-2 text-yellow-600" />
-                    AI Actions
-                  </h4>
-                  <div className="space-y-2">
-                    <button className="w-full flex items-center px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors text-sm">
-                      <Brain className="h-4 w-4 mr-2" />
-                      สรุปใหม่ด้วย AI อื่น
-                    </button>
-                    <button className="w-full flex items-center px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors text-sm">
-                      <Shield className="h-4 w-4 mr-2" />
-                      ตรวจสอบด้วย Typhoon
-                    </button>
-                    <button className="w-full flex items-center px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm">
-                      <Target className="h-4 w-4 mr-2" />
-                      สกัดงานที่ต้องทำ
-                    </button>
-                    <button className="w-full flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm">
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      สนทนาเกี่ยวกับเอกสาร
-                    </button>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">อัปโหลดเอกสาร</h2>
-              <button 
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">อัปโหลดเอกสาร</h3>
+              <button
                 onClick={() => setShowUploadModal(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-
-            <div className="space-y-6">
-              {/* Upload Area */}
-              <div 
+            
+            <div className="space-y-4">
+              <div
                 className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <input 
-                  ref={fileInputRef}
-                  type="file" 
-                  multiple 
-                  className="hidden" 
-                  onChange={(e) => {
-                    if (e.target.files) {
-                      handleFileUpload(Array.from(e.target.files));
-                    }
-                  }}
-                />
-                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-lg font-medium text-gray-900 mb-2">ลากไฟล์มาวางที่นี่</p>
-                <p className="text-gray-600 mb-4">หรือคลิกเพื่อเลือกไฟล์</p>
-                <p className="text-sm text-gray-500">รองรับ PDF, Word, Excel, PowerPoint, รูปภาพ และอื่นๆ</p>
+                <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-600">คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวาง</p>
+                <p className="text-xs text-gray-500 mt-1">รองรับ PDF, Word, Excel, PowerPoint, รูปภาพ</p>
               </div>
-
-              {/* Processing Options */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-3">ตัวเลือกการประมวลผล</h3>
-                  <div className="space-y-3">
-                    <label className="flex items-center">
-                      <input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                      <span className="ml-2 text-sm text-gray-700">สรุปเอกสารด้วย AI</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                      <span className="ml-2 text-sm text-gray-700">วิเคราะห์เนื้อหา</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                      <span className="ml-2 text-sm text-gray-700">สกัดข้อมูลสำคัญ</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                      <span className="ml-2 text-sm text-gray-700">ตรวจสอบการคัดลอก</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-3">การตั้งค่า</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">โฟลเดอร์</label>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">เลือกโฟลเดอร์</option>
-                        {folders.map(folder => (
-                          <option key={folder.id} value={folder.id}>{folder.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">สิทธิ์การเข้าถึง</label>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="private">ส่วนตัว</option>
-                        <option value="team">ทีม</option>
-                        <option value="public">สาธารณะ</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">แท็ก</label>
-                      <input 
-                        type="text" 
-                        placeholder="เพิ่มแท็ก (คั่นด้วยเครื่องหมายจุลภาค)"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Cost Estimate */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-blue-900 mb-2">ประมาณการค่าใช้จ่าย</h4>
-                <div className="space-y-1 text-xs text-blue-700">
-                  <div className="flex justify-between">
-                    <span>การสรุปเอกสาร (1 ไฟล์)</span>
-                    <span>฿5</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>การวิเคราะห์เนื้อหา</span>
-                    <span>฿3</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>การสกัดข้อมูล</span>
-                    <span>฿2</span>
-                  </div>
-                  <div className="flex justify-between font-medium border-t border-blue-200 pt-1">
-                    <span>รวม (ต่อไฟล์)</span>
-                    <span>฿10</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center justify-end space-x-3">
-                <button 
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif"
+                onChange={(e) => {
+                  if (e.target.files) {
+                    handleFileUpload(e.target.files);
+                    setShowUploadModal(false);
+                  }
+                }}
+              />
+              
+              <div className="flex justify-end space-x-3">
+                <button
                   onClick={() => setShowUploadModal(false)}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
                 >
                   ยกเลิก
                 </button>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  เริ่มอัปโหลด
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  เลือกไฟล์
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Folder Modal */}
+      {showNewFolderModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">สร้างโฟลเดอร์ใหม่</h3>
+              <button
+                onClick={() => setShowNewFolderModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">ชื่อโฟลเดอร์</label>
+                <input
+                  type="text"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  placeholder="ระบุชื่อโฟลเดอร์"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onKeyPress={(e) => e.key === 'Enter' && handleCreateFolder()}
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowNewFolderModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={handleCreateFolder}
+                  disabled={!newFolderName.trim()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  สร้าง
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Document Detail Modal */}
+      {selectedDocument && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-4xl h-5/6 flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                {getFileIcon(selectedDocument.type)}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">{selectedDocument.name}</h3>
+                  <p className="text-sm text-gray-600">
+                    {formatFileSize(selectedDocument.size)} • {selectedDocument.uploadDate.toLocaleDateString('th-TH')}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedDocument(null)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6">
+              {selectedDocument.status === 'completed' ? (
+                <div className="space-y-6">
+                  {selectedDocument.summary && (
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">สรุปเอกสาร</h4>
+                      <p className="text-gray-700 leading-relaxed">{selectedDocument.summary}</p>
+                    </div>
+                  )}
+                  
+                  {selectedDocument.keyPoints && selectedDocument.keyPoints.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">จุดสำคัญ</h4>
+                      <ul className="space-y-2">
+                        {selectedDocument.keyPoints.map((point, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0" />
+                            <span className="text-gray-700">{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">ข้อมูลเอกสาร</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">ประเภท:</span>
+                          <span className="text-gray-900">{selectedDocument.type.toUpperCase()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">ขนาด:</span>
+                          <span className="text-gray-900">{formatFileSize(selectedDocument.size)}</span>
+                        </div>
+                        {selectedDocument.pageCount && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">จำนวนหน้า:</span>
+                            <span className="text-gray-900">{selectedDocument.pageCount}</span>
+                          </div>
+                        )}
+                        {selectedDocument.wordCount && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">จำนวนคำ:</span>
+                            <span className="text-gray-900">{selectedDocument.wordCount.toLocaleString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">การวิเคราะห์</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">AI Model:</span>
+                          <span className="text-gray-900">{selectedDocument.aiModel}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">ความแม่นยำ:</span>
+                          <span className="text-gray-900">{selectedDocument.confidence}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">ค่าใช้จ่าย:</span>
+                          <span className="text-gray-900">฿{selectedDocument.processingCost?.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">ภาษา:</span>
+                          <span className="text-gray-900">{selectedDocument.language === 'th' ? 'ไทย' : 'อังกฤษ'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <RefreshCw className="h-12 w-12 text-blue-500 mx-auto mb-4 animate-spin" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">กำลังประมวลผลเอกสาร</h3>
+                  <p className="text-gray-600">กรุณารอสักครู่...</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="border-t border-gray-200 p-6">
+              <div className="flex justify-between">
+                <div className="flex space-x-3">
+                  <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <Download className="h-4 w-4 mr-2" />
+                    ดาวน์โหลด
+                  </button>
+                  <button className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                    <Share2 className="h-4 w-4 mr-2" />
+                    แชร์
+                  </button>
+                </div>
+                <button className="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  ลบ
                 </button>
               </div>
             </div>
