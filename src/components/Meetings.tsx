@@ -319,7 +319,7 @@ const Meetings: React.FC = () => {
   });
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-gray-50 font-sarabun">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
@@ -331,6 +331,9 @@ const Meetings: React.FC = () => {
             <p className="text-gray-600 text-sm mt-1">บันทึก ถอดเสียง และสรุปการประชุมด้วย AI</p>
           </div>
           <div className="flex items-center space-x-3">
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 px-3 py-1 rounded-lg text-sm">
+              <span className="font-medium">ประมาณการ: ฿20/ชม.</span>
+            </div>
             <button 
               onClick={() => setShowSettings(!showSettings)}
               className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
@@ -371,10 +374,10 @@ const Meetings: React.FC = () => {
         {selectedTab === 'live' && (
           <div className="h-full flex">
             {/* Recording Panel */}
-            <div className="flex-1 p-6">
+            <div className="flex-1 p-6 overflow-y-auto">
               <div className="max-w-4xl mx-auto">
                 {/* Recording Controls */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6 hover:shadow-md transition-shadow">
                   <div className="text-center">
                     <div className={`w-32 h-32 mx-auto rounded-full flex items-center justify-center mb-6 ${
                       isRecording ? 'bg-red-100 animate-pulse' : 'bg-gray-100'
@@ -396,7 +399,7 @@ const Meetings: React.FC = () => {
                       {!isRecording ? (
                         <button
                           onClick={startRecording}
-                          className="bg-red-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center"
+                          className="bg-red-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-red-700 transition-all duration-200 flex items-center shadow-lg hover:shadow-xl transform hover:scale-105"
                         >
                           <Mic className="h-5 w-5 mr-2" />
                           เริ่มบันทึก
@@ -405,7 +408,7 @@ const Meetings: React.FC = () => {
                         <>
                           <button
                             onClick={pauseRecording}
-                            className={`px-6 py-3 rounded-xl font-semibold transition-colors flex items-center ${
+                            className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl ${
                               isPaused 
                                 ? 'bg-green-600 text-white hover:bg-green-700' 
                                 : 'bg-yellow-600 text-white hover:bg-yellow-700'
@@ -416,7 +419,7 @@ const Meetings: React.FC = () => {
                           </button>
                           <button
                             onClick={stopRecording}
-                            className="bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-700 transition-colors flex items-center"
+                            className="bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-700 transition-all duration-200 flex items-center shadow-lg hover:shadow-xl"
                           >
                             <Square className="h-5 w-5 mr-2" />
                             หยุดบันทึก
@@ -429,13 +432,13 @@ const Meetings: React.FC = () => {
 
                 {/* Live Transcript */}
                 {isRecording && (
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                       <Waveform className="h-5 w-5 mr-2 text-blue-600" />
                       การถอดเสียงแบบเรียลไทม์
                     </h3>
                     <div className="space-y-3 max-h-64 overflow-y-auto">
-                      <div className="p-3 bg-blue-50 rounded-lg">
+                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
                         <div className="flex items-center space-x-2 mb-1">
                           <User className="h-4 w-4 text-blue-600" />
                           <span className="text-sm font-medium text-blue-800">ผู้พูดที่ 1</span>
@@ -443,7 +446,7 @@ const Meetings: React.FC = () => {
                         </div>
                         <p className="text-gray-700">สวัสดีครับทุกท่าน วันนี้เราจะมาประชุมเรื่อง...</p>
                       </div>
-                      <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors">
                         <div className="flex items-center space-x-2 mb-1">
                           <User className="h-4 w-4 text-gray-600" />
                           <span className="text-sm font-medium text-gray-800">ผู้พูดที่ 2</span>
@@ -458,7 +461,7 @@ const Meetings: React.FC = () => {
             </div>
 
             {/* Recording Settings Sidebar */}
-            <div className="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto">
+            <div className="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">การตั้งค่า</h3>
               
               <div className="space-y-6">
@@ -467,7 +470,7 @@ const Meetings: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">ชื่อการประชุม</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="ระบุชื่อการประชุม"
                     value={currentMeeting?.title || ''}
                     onChange={(e) => setCurrentMeeting(prev => prev ? {...prev, title: e.target.value} : null)}
@@ -477,7 +480,7 @@ const Meetings: React.FC = () => {
                 {/* Meeting Type */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">ประเภทการประชุม</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                     <option value="internal">ประชุมภายใน</option>
                     <option value="client">ประชุมลูกค้า</option>
                     <option value="board">ประชุมคณะกรรมการ</option>
@@ -489,7 +492,7 @@ const Meetings: React.FC = () => {
                 {/* Audio Quality */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">คุณภาพเสียง</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                     <option value="high">สูง (ใช้เครดิตมาก)</option>
                     <option value="medium">ปานกลาง (แนะนำ)</option>
                     <option value="low">ต่ำ (ประหยัดเครดิต)</option>
@@ -499,7 +502,7 @@ const Meetings: React.FC = () => {
                 {/* Language */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">ภาษา</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                     <option value="th">ไทย</option>
                     <option value="en">อังกฤษ</option>
                     <option value="auto">ตรวจจับอัตโนมัติ</option>
@@ -509,13 +512,13 @@ const Meetings: React.FC = () => {
                 {/* Auto Summary */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">สรุปอัตโนมัติ</span>
-                  <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-colors">
+                  <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-all duration-200 hover:bg-blue-700">
                     <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6" />
                   </button>
                 </div>
 
                 {/* Cost Estimate */}
-                <div className="bg-blue-50 rounded-lg p-4">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                   <h4 className="text-sm font-medium text-blue-900 mb-2">ประมาณการค่าใช้จ่าย</h4>
                   <div className="space-y-1 text-xs text-blue-700">
                     <div className="flex justify-between">
@@ -541,13 +544,13 @@ const Meetings: React.FC = () => {
           <div className="p-6">
             <div className="max-w-4xl mx-auto">
               {/* Upload Area */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6 hover:shadow-md transition-shadow">
                 <div className="text-center">
                   <Upload className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">อัปโหลดไฟล์เสียงการประชุม</h2>
                   <p className="text-gray-600 mb-6">รองรับไฟล์ MP3, WAV, M4A ขนาดสูงสุด 500MB</p>
                   
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-blue-400 transition-colors cursor-pointer">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer">
                     <input type="file" className="hidden" accept="audio/*" />
                     <div className="space-y-2">
                       <Upload className="h-8 w-8 text-gray-400 mx-auto" />
@@ -559,7 +562,7 @@ const Meetings: React.FC = () => {
 
               {/* Processing Options */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <Brain className="h-5 w-5 mr-2 text-purple-600" />
                     ตัวเลือกการประมวลผล
@@ -567,45 +570,45 @@ const Meetings: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-700">ถอดเสียงเป็นข้อความ</span>
-                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600">
+                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-all duration-200 hover:bg-blue-700">
                         <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-6" />
                       </button>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-700">สรุปการประชุม</span>
-                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600">
+                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-all duration-200 hover:bg-blue-700">
                         <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-6" />
                       </button>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-700">สกัดงานที่ต้องทำ</span>
-                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600">
+                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-all duration-200 hover:bg-blue-700">
                         <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-6" />
                       </button>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-700">ระบุผู้พูด</span>
-                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300">
+                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 transition-all duration-200 hover:bg-gray-400">
                         <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
                       </button>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <Zap className="h-5 w-5 mr-2 text-yellow-600" />
                     AI Models
                   </h3>
                   <div className="space-y-3">
-                    <div className="p-3 border border-gray-200 rounded-lg">
+                    <div className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 cursor-pointer">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-medium text-gray-900">Whisper (OpenAI)</span>
                         <span className="text-xs text-green-600">แนะนำ</span>
                       </div>
                       <p className="text-xs text-gray-600">เหมาะสำหรับภาษาไทย ความแม่นยำสูง</p>
                     </div>
-                    <div className="p-3 border border-gray-200 rounded-lg">
+                    <div className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 cursor-pointer">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-medium text-gray-900">Claude 3.5 Sonnet</span>
                         <span className="text-xs text-blue-600">สรุป</span>
@@ -622,7 +625,7 @@ const Meetings: React.FC = () => {
         {selectedTab === 'history' && (
           <div className="h-full flex">
             {/* Meeting List */}
-            <div className="flex-1 p-6">
+            <div className="flex-1 p-6 overflow-y-auto">
               {/* Filters */}
               <div className="flex items-center space-x-4 mb-6">
                 <div className="flex-1 relative">
@@ -632,13 +635,13 @@ const Meetings: React.FC = () => {
                     placeholder="ค้นหาการประชุม..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   />
                 </div>
                 <select 
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 >
                   <option value="all">ทั้งหมด</option>
                   <option value="completed">เสร็จสิ้น</option>
@@ -652,7 +655,7 @@ const Meetings: React.FC = () => {
                 {filteredMeetings.map((meeting) => (
                   <div 
                     key={meeting.id} 
-                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-blue-300 transition-all duration-200 cursor-pointer"
                     onClick={() => setSelectedMeeting(meeting)}
                   >
                     <div className="flex items-start justify-between">
@@ -686,7 +689,7 @@ const Meetings: React.FC = () => {
 
                         <div className="flex items-center space-x-2 mb-3">
                           {meeting.tags.map((tag, index) => (
-                            <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full hover:bg-blue-200 transition-colors">
                               {tag}
                             </span>
                           ))}
@@ -698,13 +701,13 @@ const Meetings: React.FC = () => {
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                        <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all duration-200">
                           <Share2 className="h-4 w-4" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                        <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all duration-200">
                           <Download className="h-4 w-4" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                        <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all duration-200">
                           <MoreHorizontal className="h-4 w-4" />
                         </button>
                       </div>
@@ -716,13 +719,13 @@ const Meetings: React.FC = () => {
 
             {/* Meeting Detail Sidebar */}
             {selectedMeeting && (
-              <div className="w-96 bg-white border-l border-gray-200 overflow-y-auto">
+              <div className="w-96 bg-white border-l border-gray-200 overflow-y-auto shadow-sm">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold text-gray-900">รายละเอียดการประชุม</h2>
                     <button 
                       onClick={() => setSelectedMeeting(null)}
-                      className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                      className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all duration-200"
                     >
                       <X className="h-5 w-5" />
                     </button>
@@ -930,19 +933,19 @@ const Meetings: React.FC = () => {
                     <div className="border-t border-gray-200 pt-4">
                       <h4 className="text-sm font-medium text-gray-900 mb-3">ส่งออกข้อมูล</h4>
                       <div className="grid grid-cols-2 gap-2">
-                        <button className="flex items-center justify-center px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm">
+                        <button className="flex items-center justify-center px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-all duration-200 text-sm">
                           <FileText className="h-4 w-4 mr-2" />
                           Word
                         </button>
-                        <button className="flex items-center justify-center px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm">
+                        <button className="flex items-center justify-center px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-all duration-200 text-sm">
                           <Share2 className="h-4 w-4 mr-2" />
                           แชร์
                         </button>
-                        <button className="flex items-center justify-center px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm">
+                        <button className="flex items-center justify-center px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all duration-200 text-sm">
                           <Shield className="h-4 w-4 mr-2" />
                           ตรวจสอบ
                         </button>
-                        <button className="flex items-center justify-center px-3 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors text-sm">
+                        <button className="flex items-center justify-center px-3 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-all duration-200 text-sm">
                           <Download className="h-4 w-4 mr-2" />
                           ดาวน์โหลด
                         </button>
