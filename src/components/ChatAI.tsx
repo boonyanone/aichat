@@ -20,7 +20,12 @@ import {
   ThumbsUp,
   ThumbsDown,
   Settings,
-  X
+  X,
+  FileText,
+  Users,
+  Share2,
+  Download,
+  Bookmark
 } from 'lucide-react';
 
 interface Message {
@@ -66,10 +71,10 @@ const ChatAI: React.FC = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const personas = [
-    { id: 'student', label: 'นักเรียน/นักศึกษา', icon: '👨‍🎓', description: 'การเรียน วิจัย การบ้าน' },
-    { id: 'employee', label: 'พนักงาน', icon: '👨‍💼', description: 'งานออฟฟิศ โปรเจกต์' },
+    { id: 'student', label: 'นักเรียน/นักศึกษา', icon: '🎓', description: 'การเรียน วิจัย การบ้าน' },
+    { id: 'employee', label: 'พนักงาน', icon: '💼', description: 'งานออฟฟิศ โปรเจกต์' },
     { id: 'government', label: 'ข้าราชการ', icon: '🏛️', description: 'หนังสือราชการ นโยบาย' },
-    { id: 'researcher', label: 'นักวิจัย', icon: '👨‍🔬', description: 'วิจัย วิเคราะห์ข้อมูล' },
+    { id: 'researcher', label: 'นักวิจัย', icon: '🔬', description: 'วิจัย วิเคราะห์ข้อมูล' },
     { id: 'business', label: 'ธุรกิจ', icon: '📊', description: 'กลยุทธ์ การตลาด' },
     { id: 'organization', label: 'องค์กร', icon: '🏢', description: 'บริหารจัดการ ทีมงาน' },
     { id: 'general', label: 'ทั่วไป', icon: '💬', description: 'คำถามทั่วไป' }
@@ -81,7 +86,6 @@ const ChatAI: React.FC = () => {
       name: 'AI Router', 
       description: 'เลือก AI ที่เหมาะสมอัตโนมัติ', 
       icon: '⚡', 
-      color: 'from-yellow-400 to-orange-500', 
       cost: 'ประหยัดสุด',
       bestFor: 'งานทั่วไป ประหยัดต้นทุน'
     },
@@ -90,7 +94,6 @@ const ChatAI: React.FC = () => {
       name: 'GPT-4', 
       description: 'AI ที่ทรงพลังที่สุด', 
       icon: '🧠', 
-      color: 'from-green-400 to-green-600', 
       cost: '฿0.03/1K tokens',
       bestFor: 'งานซับซ้อน การวิเคราะห์ลึก'
     },
@@ -99,7 +102,6 @@ const ChatAI: React.FC = () => {
       name: 'Claude 3.5', 
       description: 'เก่งการอ่านและวิเคราะห์', 
       icon: '🤖', 
-      color: 'from-orange-400 to-red-500', 
       cost: '฿0.003/1K tokens',
       bestFor: 'เอกสารยาว การวิเคราะห์'
     },
@@ -108,7 +110,6 @@ const ChatAI: React.FC = () => {
       name: 'Gemini Pro', 
       description: 'รวดเร็วและประหยัด', 
       icon: '✨', 
-      color: 'from-blue-400 to-purple-500', 
       cost: '฿0.0005/1K tokens',
       bestFor: 'งานทั่วไป ตอบเร็ว'
     },
@@ -117,7 +118,6 @@ const ChatAI: React.FC = () => {
       name: 'Perplexity', 
       description: 'ค้นหาข้อมูลล่าสุด', 
       icon: '🌐', 
-      color: 'from-purple-400 to-pink-500', 
       cost: '฿0.002/1K tokens',
       bestFor: 'ข้อมูลล่าสุด การค้นหา'
     }
@@ -233,6 +233,16 @@ const ChatAI: React.FC = () => {
     inputRef.current?.focus();
   };
 
+  const shareToDocuments = (messageContent: string) => {
+    // Simulate sharing to documents
+    alert('แชร์ไปยังเอกสารเรียบร้อย!');
+  };
+
+  const shareToTeam = (messageContent: string) => {
+    // Simulate sharing to team
+    alert('แชร์ไปยังทีมเรียบร้อย!');
+  };
+
   return (
     <div className="h-full flex bg-gray-50">
       {/* Main Chat Area */}
@@ -244,7 +254,6 @@ const ChatAI: React.FC = () => {
               <h1 className="text-xl font-semibold text-gray-900">Chat AI</h1>
             </div>
             
-            {/* ประวัติและแชทใหม่ */}
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setShowHistory(!showHistory)}
@@ -270,30 +279,30 @@ const ChatAI: React.FC = () => {
           {messages.length === 0 ? (
             <div className="max-w-4xl mx-auto">
               {/* Welcome Section */}
-              <div className="text-center mb-12">
-                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Brain className="h-10 w-10 text-white" />
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Brain className="h-8 w-8 text-white" />
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">ThaiAI Assistant</h1>
-                <p className="text-lg text-gray-600 mb-8">ผู้ช่วย AI ที่เข้าใจคุณและงานของคุณ</p>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">ThaiAI Assistant</h1>
+                <p className="text-gray-600">ผู้ช่วย AI ที่เข้าใจคุณและงานของคุณ</p>
               </div>
 
               {/* Persona Selection */}
-              <div className="mb-10">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">เลือกบทบาทของคุณ</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">คุณคือใคร?</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                   {personas.map(persona => (
                     <button
                       key={persona.id}
                       onClick={() => setSelectedPersona(persona.id)}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 hover:shadow-lg ${
+                      className={`p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 hover:shadow-md ${
                         selectedPersona === persona.id
-                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-lg'
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
                           : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700 hover:bg-blue-50'
                       }`}
                     >
-                      <div className="text-2xl mb-3">{persona.icon}</div>
-                      <div className="text-sm font-semibold mb-2">{persona.label}</div>
+                      <div className="text-xl mb-2">{persona.icon}</div>
+                      <div className="text-xs font-medium mb-1">{persona.label}</div>
                       <div className="text-xs text-gray-500 leading-tight">{persona.description}</div>
                     </button>
                   ))}
@@ -302,20 +311,20 @@ const ChatAI: React.FC = () => {
 
               {/* Template Questions */}
               {selectedPersona && templateQuestions[selectedPersona as keyof typeof templateQuestions] && (
-                <div className="mb-10">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
                     คำถามแนะนำสำหรับ{personas.find(p => p.id === selectedPersona)?.label}
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {templateQuestions[selectedPersona as keyof typeof templateQuestions].map((template, index) => (
                       <button
                         key={index}
                         onClick={() => handleTemplateClick(template)}
-                        className="p-5 text-left bg-white border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 text-gray-700 hover:text-blue-700 hover:shadow-lg group"
+                        className="p-4 text-left bg-white border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 text-gray-700 hover:text-blue-700 hover:shadow-md group"
                       >
                         <div className="flex items-start space-x-3">
-                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors">
-                            <MessageSquare className="h-4 w-4 text-blue-600" />
+                          <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors">
+                            <MessageSquare className="h-3 w-3 text-blue-600" />
                           </div>
                           <div className="text-sm leading-relaxed">{template}</div>
                         </div>
@@ -345,7 +354,7 @@ const ChatAI: React.FC = () => {
                         <div className={`inline-block p-4 rounded-2xl ${
                           message.type === 'user'
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white border border-gray-200 text-gray-900'
+                            : 'bg-white border border-gray-200 text-gray-900 shadow-sm'
                         }`}>
                           <p className="whitespace-pre-wrap">{message.content}</p>
                         </div>
@@ -370,26 +379,34 @@ const ChatAI: React.FC = () => {
 
                             {/* Sources */}
                             {message.sources && message.sources.length > 0 && (
-                              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-                                  <Globe className="h-4 w-4 mr-2 text-blue-600" />
+                              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                                <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center">
+                                  <Globe className="h-4 w-4 mr-2" />
                                   แหล่งอ้างอิง
                                 </h4>
                                 <div className="space-y-2">
                                   {message.sources.map((source, index) => (
-                                    <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
-                                      <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                                        {source.title}
-                                        <Globe className="h-3 w-3 ml-1" />
-                                      </a>
-                                      <div className="flex items-center space-x-3">
-                                        <div className="flex items-center space-x-1">
-                                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                          <span className="text-xs text-gray-600">{source.relevance}%</span>
-                                        </div>
-                                        <div className="flex items-center space-x-1">
-                                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                          <span className="text-xs text-gray-600">{source.credibility}%</span>
+                                    <div key={index} className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 hover:shadow-sm transition-all">
+                                      <div className="flex items-center justify-between">
+                                        <a 
+                                          href={source.url} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          className="text-sm text-blue-700 hover:text-blue-900 font-medium flex items-center group"
+                                        >
+                                          <Globe className="h-3 w-3 mr-2 text-blue-500" />
+                                          {source.title}
+                                          <span className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
+                                        </a>
+                                        <div className="flex items-center space-x-3">
+                                          <div className="flex items-center space-x-1">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            <span className="text-xs text-gray-600 font-medium">{source.relevance}%</span>
+                                          </div>
+                                          <div className="flex items-center space-x-1">
+                                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                            <span className="text-xs text-gray-600 font-medium">{source.credibility}%</span>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
@@ -430,11 +447,25 @@ const ChatAI: React.FC = () => {
                               <button className="p-2 text-gray-400 hover:text-yellow-600 rounded-lg hover:bg-yellow-50 transition-colors">
                                 <Star className="h-4 w-4" />
                               </button>
-                              <button className="p-2 text-gray-400 hover:text-purple-600 rounded-lg hover:bg-purple-50 transition-colors">
+                              <button 
+                                onClick={() => shareToDocuments(message.content)}
+                                className="p-2 text-gray-400 hover:text-purple-600 rounded-lg hover:bg-purple-50 transition-colors"
+                                title="แชร์ไปยังเอกสาร"
+                              >
                                 <FileText className="h-4 w-4" />
                               </button>
-                              <button className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors">
+                              <button 
+                                onClick={() => shareToTeam(message.content)}
+                                className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
+                                title="แชร์ไปยังทีม"
+                              >
                                 <Users className="h-4 w-4" />
+                              </button>
+                              <button className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors">
+                                <Share2 className="h-4 w-4" />
+                              </button>
+                              <button className="p-2 text-gray-400 hover:text-orange-600 rounded-lg hover:bg-orange-50 transition-colors">
+                                <Bookmark className="h-4 w-4" />
                               </button>
                             </div>
                           </div>
@@ -451,7 +482,7 @@ const ChatAI: React.FC = () => {
                     <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
                       <Bot className="h-4 w-4 text-white" />
                     </div>
-                    <div className="bg-white border border-gray-200 rounded-2xl p-4">
+                    <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
                       <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
@@ -471,16 +502,15 @@ const ChatAI: React.FC = () => {
         <div className="bg-white border-t border-gray-200 p-4">
           <div className="max-w-4xl mx-auto">
             {/* AI Model Selector */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">เลือก AI Model:</label>
+            <div className="mb-3">
               <select
                 value={selectedAI}
                 onChange={(e) => setSelectedAI(e.target.value)}
-                className="w-full md:w-80 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                className="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 text-sm"
               >
                 {aiModels.map(model => (
                   <option key={model.id} value={model.id}>
-                    {model.icon} {model.name} - {model.cost} ({model.bestFor})
+                    {model.icon} {model.name} - {model.cost} • {model.bestFor}
                   </option>
                 ))}
               </select>
