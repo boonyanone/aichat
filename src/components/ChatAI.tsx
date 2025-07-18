@@ -25,7 +25,12 @@ import {
   Users,
   Share2,
   Download,
-  Bookmark
+  Bookmark,
+  GraduationCap,
+  Briefcase,
+  Building,
+  FlaskConical,
+  BarChart3
 } from 'lucide-react';
 
 interface Message {
@@ -239,12 +244,10 @@ const ChatAI: React.FC = () => {
   };
 
   const shareToDocuments = (messageContent: string) => {
-    // Simulate sharing to documents
     alert('แชร์ไปยังเอกสารเรียบร้อย!');
   };
 
   const shareToTeam = (messageContent: string) => {
-    // Simulate sharing to team
     alert('แชร์ไปยังทีมเรียบร้อย!');
   };
 
@@ -283,41 +286,37 @@ const ChatAI: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-6">
           {messages.length === 0 ? (
             <div className="max-w-4xl mx-auto">
-              {/* Welcome Section */}
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Brain className="h-8 w-8 text-white" />
-                </div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">ThaiAI Assistant</h1>
-                <p className="text-gray-600">ผู้ช่วย AI ที่เข้าใจคุณและงานของคุณ</p>
-              </div>
-
               {/* Persona Selection */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">คุณคือใคร?</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                  {personas.map(persona => (
-                    <button
-                      key={persona.id}
-                      onClick={() => setSelectedPersona(persona.id)}
-                      className={`p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 hover:shadow-md ${
-                        selectedPersona === persona.id
-                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
-                          : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700 hover:bg-blue-50'
-                      }`}
-                    >
-                      <div className="text-xl mb-2">{persona.icon}</div>
-                      <div className="text-xs font-medium mb-1">{persona.label}</div>
-                      <div className="text-xs text-gray-500 leading-tight">{persona.description}</div>
-                    </button>
-                  ))}
+                <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">คุณคือใคร?</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                  {personas.map(persona => {
+                    const Icon = persona.icon;
+                    return (
+                      <button
+                        key={persona.id}
+                        onClick={() => setSelectedPersona(persona.id)}
+                        className={`p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 hover:shadow-lg ${
+                          selectedPersona === persona.id
+                            ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-lg'
+                            : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700 hover:bg-blue-50 shadow-sm'
+                        }`}
+                      >
+                        <div className="text-center">
+                          <Icon className="h-8 w-8 mx-auto mb-2 text-current" />
+                          <div className="text-sm font-medium mb-1">{persona.label}</div>
+                          <div className="text-xs text-gray-500 leading-tight">{persona.description}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Template Questions */}
               {selectedPersona && templateQuestions[selectedPersona as keyof typeof templateQuestions] && (
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">
                     คำถามแนะนำสำหรับ{personas.find(p => p.id === selectedPersona)?.label}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -514,7 +513,7 @@ const ChatAI: React.FC = () => {
                     <button
                       key={model.id}
                       onClick={() => setSelectedAI(model.id)}
-                      className={`p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 hover:shadow-lg ${
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 hover:shadow-lg ${
                         selectedAI === model.id
                           ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-lg'
                           : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700 hover:bg-blue-50 shadow-sm'
@@ -525,7 +524,7 @@ const ChatAI: React.FC = () => {
                           <span className="text-lg">{model.icon}</span>
                           <Logo className="h-4 w-4" />
                         </div>
-                        <div className="text-xs font-semibold mb-1">{model.name}</div>
+                        <div className="text-sm font-semibold mb-1">{model.name}</div>
                         <div className="text-xs text-gray-500 mb-1">{model.cost}</div>
                         <div className="text-xs text-gray-400 leading-tight">{model.bestFor}</div>
                       </div>
@@ -533,8 +532,18 @@ const ChatAI: React.FC = () => {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Input */}
+            <div className="flex items-end space-x-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <textarea
+                    ref={inputRef}
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 hover:shadow-lg ${
+                    placeholder="พิมพ์คำถามของคุณ..."
                     className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     rows={1}
                     style={{ minHeight: '48px', maxHeight: '120px' }}
@@ -542,15 +551,13 @@ const ChatAI: React.FC = () => {
                   <div className="absolute right-3 bottom-3 flex items-center space-x-2">
                     <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
                       <Paperclip className="h-4 w-4" />
-                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-lg'
-                        : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700 hover:bg-blue-50 shadow-sm'
+                    </button>
+                    <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
                       <ImageIcon className="h-4 w-4" />
                     </button>
-                    <div className="flex flex-col items-center">
-                      <persona.icon className="h-6 w-6 mb-2" />
-                      <div className="text-xs font-medium mb-1 text-center">{persona.label}</div>
-                      <div className="text-xs text-gray-500 leading-tight text-center">{persona.description}</div>
-                    </div>
+                    <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
+                      <Mic className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               </div>
