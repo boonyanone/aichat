@@ -9,6 +9,7 @@ import Teams from './components/Teams';
 import Settings from './components/Settings';
 import AIModels from './components/AIModels';
 import Analytics from './components/Analytics';
+import Compliance from './components/Compliance';
 import LandingPage from './components/LandingPage';
 
 function App() {
@@ -71,10 +72,7 @@ function App() {
           )}
           {activeTab === 'analytics' && <Analytics />}
           {activeTab === 'compliance' && (
-            <div className="p-6">
-              <h1 className="text-2xl font-bold text-gray-900">ตรวจสอบ</h1>
-              <p className="text-gray-600 mt-2">ฟีเจอร์ตรวจสอบข้อมูลกำลังพัฒนา...</p>
-            </div>
+            <Compliance />
           )}
           {activeTab === 'templates' && (
             <div className="p-6">
