@@ -34,7 +34,10 @@ import {
   Search,
   Filter,
   Trash2,
-  Edit3
+  Edit3,
+  Menu,
+  PanelRightOpen,
+  PanelRightClose
 } from 'lucide-react';
 
 interface Message {
@@ -247,6 +250,7 @@ export default function ChatAI() {
   const [selectedPersona, setSelectedPersona] = useState(personas[6]); // General as default
   const [isLoading, setIsLoading] = useState(false);
   const [showAIDropdown, setShowAIDropdown] = useState(false);
+  const [showHistorySidebar, setShowHistorySidebar] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>(mockChatHistory);
   const [searchHistory, setSearchHistory] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -362,86 +366,52 @@ export default function ChatAI() {
   const startNewChat = () => {
     setMessages([]);
     setSelectedPersona(personas[6]); // Reset to general
+    setShowHistorySidebar(false);
   };
 
   return (
-    <div className="h-full flex bg-gray-50">
-      {/* History Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+    <div className="h-full flex bg-gray-50 relative">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
-          <button
-            onClick={startNewChat}
-            className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            แชทใหม่
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className="p-4 border-b border-gray-200">
-          <div className="relative">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchHistory}
-              onChange={(e) => setSearchHistory(e.target.value)}
-              placeholder="ค้นหาประวัติ..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 text-sm"
-            />
-          </div>
-        </div>
-
-        {/* Chat History */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-4">
-            <h3 className="text-sm font-medium text-gray-500 mb-3">ประวัติการสนทนา</h3>
-            <div className="space-y-2">
-              {filteredHistory.map((chat) => (
-                <button
-                  key={chat.id}
-                  className="w-full p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
-                >
-                  <div className="font-medium text-gray-900 text-sm mb-1 group-hover:text-blue-700 line-clamp-2">
-                    {chat.title}
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center space-x-2">
-                      <span>{chat.aiModel}</span>
-                      <span>•</span>
-                      <span>{chat.messageCount} ข้อความ</span>
-                    </div>
-                    <span>฿{chat.totalCost.toFixed(2)}</span>
-                  </div>
-                  <div className="flex items-center space-x-1 mt-1">
-                    <Clock className="w-3 h-3 text-gray-400" />
-                    <span className="text-xs text-gray-400">{chat.lastUpdated.toLocaleDateString('th-TH')}</span>
-                  </div>
-                </button>
-              ))}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+                <MessageSquare className="h-7 w-7 mr-3 text-blue-600" />
+                Chat AI
+              </h1>
+              <p className="text-gray-600 text-sm mt-1">สนทนากับ AI หลายโมเดลในที่เดียว</p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={startNewChat}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                แชทใหม่
+              </button>
+              <button
+                onClick={() => setShowHistorySidebar(!showHistorySidebar)}
+                className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                  showHistorySidebar 
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <History className="h-4 w-4 mr-2" />
+                ประวัติ
+              </button>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
             /* Welcome Screen */
             <div className="h-full flex flex-col items-center justify-center p-8">
               <div className="max-w-4xl w-full">
-                {/* Welcome Message */}
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <MessageSquare className="h-8 w-8 text-white" />
-                  </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">สวัสดี! ผมคือ ThaiAI</h1>
-                  <p className="text-lg text-gray-600">ผู้ช่วย AI ที่พร้อมตอบคำถามและช่วยงานต่างๆ ของคุณ</p>
-                </div>
-
                 {/* Persona Selection */}
                 <div className="mb-8">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">เลือกบทบาทของคุณ</h3>
@@ -715,6 +685,75 @@ export default function ChatAI() {
           </div>
         </div>
       </div>
+
+      {/* History Sidebar - Right Side */}
+      {showHistorySidebar && (
+        <>
+          {/* Overlay for mobile */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setShowHistorySidebar(false)}
+          />
+          
+          {/* Sidebar */}
+          <div className="fixed right-0 top-0 h-full w-80 bg-white border-l border-gray-200 z-50 flex flex-col shadow-xl">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">ประวัติการสนทนา</h3>
+                <button
+                  onClick={() => setShowHistorySidebar(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Search */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="relative">
+                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchHistory}
+                  onChange={(e) => setSearchHistory(e.target.value)}
+                  placeholder="ค้นหาประวัติ..."
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Chat History */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-2">
+                {filteredHistory.map((chat) => (
+                  <button
+                    key={chat.id}
+                    className="w-full p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+                  >
+                    <div className="font-medium text-gray-900 text-sm mb-1 group-hover:text-blue-700 line-clamp-2">
+                      {chat.title}
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center space-x-2">
+                        <span>{chat.aiModel}</span>
+                        <span>•</span>
+                        <span>{chat.messageCount} ข้อความ</span>
+                      </div>
+                      <span>฿{chat.totalCost.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center space-x-1 mt-1">
+                      <Clock className="w-3 h-3 text-gray-400" />
+                      <span className="text-xs text-gray-400">{chat.lastUpdated.toLocaleDateString('th-TH')}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
