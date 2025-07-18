@@ -66,21 +66,61 @@ const ChatAI: React.FC = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const personas = [
-    { id: 'student', label: 'นักเรียน/นักศึกษา', icon: '🎓' },
-    { id: 'employee', label: 'พนักงาน', icon: '💼' },
-    { id: 'government', label: 'ข้าราชการ', icon: '🏛️' },
-    { id: 'researcher', label: 'นักวิจัย', icon: '🔬' },
-    { id: 'business', label: 'ธุรกิจ', icon: '📈' },
-    { id: 'organization', label: 'หน่วยงาน/องค์กร', icon: '🏢' },
-    { id: 'general', label: 'ทั่วไป', icon: '👤' }
+    { id: 'student', label: 'นักเรียน/นักศึกษา', icon: '👨‍🎓', description: 'การเรียน วิจัย การบ้าน' },
+    { id: 'employee', label: 'พนักงาน', icon: '👨‍💼', description: 'งานออฟฟิศ โปรเจกต์' },
+    { id: 'government', label: 'ข้าราชการ', icon: '🏛️', description: 'หนังสือราชการ นโยบาย' },
+    { id: 'researcher', label: 'นักวิจัย', icon: '👨‍🔬', description: 'วิจัย วิเคราะห์ข้อมูล' },
+    { id: 'business', label: 'ธุรกิจ', icon: '📊', description: 'กลยุทธ์ การตลาด' },
+    { id: 'organization', label: 'องค์กร', icon: '🏢', description: 'บริหารจัดการ ทีมงาน' },
+    { id: 'general', label: 'ทั่วไป', icon: '💬', description: 'คำถามทั่วไป' }
   ];
 
   const aiModels = [
-    { id: 'ai-router', name: 'AI Router', description: 'เลือกอัตโนมัติ', icon: Zap, color: 'text-yellow-600', cost: 'ประหยัดสุด' },
-    { id: 'gpt-4', name: 'GPT-4', description: 'ทรงพลังที่สุด', icon: Brain, color: 'text-green-600', cost: '฿0.03/1K tokens' },
-    { id: 'claude', name: 'Claude 3.5', description: 'เก่งวิเคราะห์', icon: Bot, color: 'text-orange-600', cost: '฿0.003/1K tokens' },
-    { id: 'gemini', name: 'Gemini Pro', description: 'รวดเร็วประหยัด', icon: Sparkles, color: 'text-blue-600', cost: '฿0.0005/1K tokens' },
-    { id: 'perplexity', name: 'Perplexity', description: 'ค้นหาข้อมูลล่าสุด', icon: Globe, color: 'text-purple-600', cost: '฿0.002/1K tokens' }
+    { 
+      id: 'ai-router', 
+      name: 'AI Router', 
+      description: 'เลือก AI ที่เหมาะสมอัตโนมัติ', 
+      icon: '⚡', 
+      color: 'from-yellow-400 to-orange-500', 
+      cost: 'ประหยัดสุด',
+      bestFor: 'งานทั่วไป ประหยัดต้นทุน'
+    },
+    { 
+      id: 'gpt-4', 
+      name: 'GPT-4', 
+      description: 'AI ที่ทรงพลังที่สุด', 
+      icon: '🧠', 
+      color: 'from-green-400 to-green-600', 
+      cost: '฿0.03/1K tokens',
+      bestFor: 'งานซับซ้อน การวิเคราะห์ลึก'
+    },
+    { 
+      id: 'claude', 
+      name: 'Claude 3.5', 
+      description: 'เก่งการอ่านและวิเคราะห์', 
+      icon: '🤖', 
+      color: 'from-orange-400 to-red-500', 
+      cost: '฿0.003/1K tokens',
+      bestFor: 'เอกสารยาว การวิเคราะห์'
+    },
+    { 
+      id: 'gemini', 
+      name: 'Gemini Pro', 
+      description: 'รวดเร็วและประหยัด', 
+      icon: '✨', 
+      color: 'from-blue-400 to-purple-500', 
+      cost: '฿0.0005/1K tokens',
+      bestFor: 'งานทั่วไป ตอบเร็ว'
+    },
+    { 
+      id: 'perplexity', 
+      name: 'Perplexity', 
+      description: 'ค้นหาข้อมูลล่าสุด', 
+      icon: '🌐', 
+      color: 'from-purple-400 to-pink-500', 
+      cost: '฿0.002/1K tokens',
+      bestFor: 'ข้อมูลล่าสุด การค้นหา'
+    }
   ];
 
   const templateQuestions = {
@@ -202,25 +242,9 @@ const ChatAI: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <h1 className="text-xl font-semibold text-gray-900">Chat AI</h1>
-              
-              {/* AI Model Selector - ฝั่งซ้าย */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">AI Model:</span>
-                <select
-                  value={selectedAI}
-                  onChange={(e) => setSelectedAI(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {aiModels.map(model => (
-                    <option key={model.id} value={model.id}>
-                      {model.name} - {model.cost}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
             
-            {/* ประวัติและแชทใหม่ - ฝั่งขวา */}
+            {/* ประวัติและแชทใหม่ */}
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setShowHistory(!showHistory)}
@@ -245,31 +269,23 @@ const ChatAI: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-6">
           {messages.length === 0 ? (
             <div className="max-w-4xl mx-auto">
-              {/* Welcome Screen */}
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="h-8 w-8 text-blue-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">สวัสดี! ผมคือ ThaiAI</h2>
-                <p className="text-gray-600">เลือกบทบาทของคุณเพื่อเริ่มการสนทนาที่เหมาะสม</p>
-              </div>
-
-              {/* Persona Selection - กรอบสีเทา */}
+              {/* Persona Selection */}
               <div className="mb-8">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">คุณคือใคร?</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
                   {personas.map(persona => (
                     <button
                       key={persona.id}
                       onClick={() => setSelectedPersona(persona.id)}
-                      className={`p-4 rounded-xl border-2 transition-all hover:scale-105 ${
+                      className={`p-3 rounded-lg border transition-all hover:scale-105 ${
                         selectedPersona === persona.id
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-300 bg-gray-100 hover:border-gray-400 text-gray-700 hover:bg-gray-200'
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                          : 'border-gray-200 bg-gray-50 hover:border-gray-300 text-gray-700 hover:bg-gray-100'
                       }`}
                     >
-                      <div className="text-2xl mb-2">{persona.icon}</div>
-                      <div className="text-sm font-medium">{persona.label}</div>
+                      <div className="text-lg mb-1">{persona.icon}</div>
+                      <div className="text-xs font-medium mb-1">{persona.label}</div>
+                      <div className="text-xs text-gray-500">{persona.description}</div>
                     </button>
                   ))}
                 </div>
@@ -284,7 +300,7 @@ const ChatAI: React.FC = () => {
                       <button
                         key={index}
                         onClick={() => handleTemplateClick(template)}
-                        className="p-4 text-left border-2 border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-all text-gray-700 hover:text-blue-700"
+                        className="p-4 text-left border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all text-gray-700 hover:text-blue-700 hover:shadow-sm"
                       >
                         <div className="text-sm">{template}</div>
                       </button>
@@ -292,29 +308,6 @@ const ChatAI: React.FC = () => {
                   </div>
                 </div>
               )}
-
-              {/* AI Model Info */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">AI Model ที่เลือก</h3>
-                <div className="flex items-center space-x-4">
-                  {(() => {
-                    const model = aiModels.find(m => m.id === selectedAI);
-                    const Icon = model?.icon || Bot;
-                    return (
-                      <>
-                        <div className={`p-3 rounded-lg bg-white`}>
-                          <Icon className={`h-6 w-6 ${model?.color || 'text-gray-600'}`} />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{model?.name}</h4>
-                          <p className="text-sm text-gray-600">{model?.description}</p>
-                          <p className="text-xs text-gray-500">{model?.cost}</p>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
             </div>
           ) : (
             <div className="max-w-4xl mx-auto space-y-6">
@@ -361,17 +354,27 @@ const ChatAI: React.FC = () => {
 
                             {/* Sources */}
                             {message.sources && message.sources.length > 0 && (
-                              <div className="space-y-2">
-                                <h4 className="text-sm font-medium text-gray-700">แหล่งอ้างอิง:</h4>
-                                <div className="space-y-1">
+                              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                                  <Globe className="h-4 w-4 mr-2 text-blue-600" />
+                                  แหล่งอ้างอิง
+                                </h4>
+                                <div className="space-y-2">
                                   {message.sources.map((source, index) => (
-                                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                      <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
+                                    <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
+                                      <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
                                         {source.title}
+                                        <Globe className="h-3 w-3 ml-1" />
                                       </a>
-                                      <div className="flex items-center space-x-2 text-xs text-gray-500">
-                                        <span>เกี่ยวข้อง: {source.relevance}%</span>
-                                        <span>น่าเชื่อถือ: {source.credibility}%</span>
+                                      <div className="flex items-center space-x-3">
+                                        <div className="flex items-center space-x-1">
+                                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                          <span className="text-xs text-gray-600">{source.relevance}%</span>
+                                        </div>
+                                        <div className="flex items-center space-x-1">
+                                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                          <span className="text-xs text-gray-600">{source.credibility}%</span>
+                                        </div>
                                       </div>
                                     </div>
                                   ))}
@@ -411,6 +414,12 @@ const ChatAI: React.FC = () => {
                               <button className="p-2 text-gray-400 hover:text-yellow-600 rounded-lg hover:bg-yellow-50 transition-colors">
                                 <Star className="h-4 w-4" />
                               </button>
+                              <button className="p-2 text-gray-400 hover:text-purple-600 rounded-lg hover:bg-purple-50 transition-colors">
+                                <FileText className="h-4 w-4" />
+                              </button>
+                              <button className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors">
+                                <Users className="h-4 w-4" />
+                              </button>
                             </div>
                           </div>
                         )}
@@ -440,6 +449,34 @@ const ChatAI: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
           )}
+        </div>
+
+        {/* AI Model Selector - ด้านล่างฝั่งซ้าย */}
+        <div className="bg-white border-t border-gray-200 px-6 py-4">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">เลือก AI Model:</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+              {aiModels.map(model => (
+                <button
+                  key={model.id}
+                  onClick={() => setSelectedAI(model.id)}
+                  className={`p-3 rounded-lg border transition-all hover:scale-105 ${
+                    selectedAI === model.id
+                      ? 'border-blue-500 bg-blue-50 shadow-md'
+                      : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-r ${model.color} flex items-center justify-center text-white text-lg mb-2 mx-auto`}>
+                    {model.icon}
+                  </div>
+                  <div className="text-xs font-medium text-gray-900 mb-1">{model.name}</div>
+                  <div className="text-xs text-gray-600 mb-1">{model.description}</div>
+                  <div className="text-xs text-blue-600 font-medium">{model.cost}</div>
+                  <div className="text-xs text-gray-500 mt-1">{model.bestFor}</div>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Input Area */}
