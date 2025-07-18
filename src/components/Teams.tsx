@@ -54,7 +54,38 @@ import {
   UserX,
   UserMinus,
   Loader,
-  RefreshCw
+  RefreshCw,
+  Video,
+  Mic,
+  MicOff,
+  PhoneCall,
+  MessageCircle,
+  Hash,
+  AtSign,
+  Smile,
+  Paperclip,
+  Image,
+  FileIcon,
+  MoreVertical,
+  Reply,
+  Forward,
+  Bookmark as BookmarkIcon,
+  Heart,
+  ThumbsUp,
+  Laugh,
+  Angry,
+  Sad,
+  Surprised,
+  ChevronDown,
+  ChevronUp,
+  Minimize2,
+  Maximize2,
+  Volume2,
+  VolumeX,
+  ScreenShare,
+  Monitor,
+  Smartphone,
+  Headphones
 } from 'lucide-react';
 
 interface TeamMember {
@@ -64,6 +95,7 @@ interface TeamMember {
   role: 'owner' | 'admin' | 'member' | 'viewer';
   avatar?: string;
   status: 'active' | 'pending' | 'inactive';
+  onlineStatus: 'online' | 'away' | 'busy' | 'offline';
   joinDate: Date;
   lastActive: Date;
   department?: string;
@@ -104,7 +136,34 @@ interface Team {
     requireApproval: boolean;
     defaultRole: 'member' | 'viewer';
     billingEmail: string;
+    chatPlatform: 'google' | 'microsoft' | 'both';
+    chatChannelId?: string;
   };
+}
+
+interface ChatMessage {
+  id: string;
+  content: string;
+  sender: TeamMember;
+  timestamp: Date;
+  type: 'text' | 'file' | 'image' | 'system';
+  reactions?: Array<{
+    emoji: string;
+    users: string[];
+  }>;
+  isEdited?: boolean;
+  replyTo?: string;
+}
+
+interface ChatChannel {
+  id: string;
+  name: string;
+  description: string;
+  type: 'general' | 'project' | 'random' | 'announcements';
+  memberCount: number;
+  lastMessage?: ChatMessage;
+  unreadCount: number;
+  isPrivate: boolean;
 }
 
 interface Invitation {
@@ -118,10 +177,14 @@ interface Invitation {
 }
 
 const Teams: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'members' | 'invitations' | 'usage' | 'settings'>('members');
+  const [activeTab, setActiveTab] = useState<'overview' | 'chat' | 'members' | 'invitations' | 'usage' | 'settings'>('overview');
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatChannels, setChatChannels] = useState<ChatChannel[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<string>('general');
+  const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -132,12 +195,15 @@ const Teams: React.FC = () => {
   const [inviteRole, setInviteRole] = useState<'admin' | 'member' | 'viewer'>('member');
   const [inviteMessage, setInviteMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showChatSettings, setShowChatSettings] = useState(false);
+
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
   // Mock data
   const mockTeam: Team = {
     id: '1',
     name: 'ทีมวิจัยและพัฒนา AI',
-    description: 'ทีมงานที่ทำงานด้านการวิจัยและพัฒนาเทคโนโลยี AI สำหรับองค์กร',
+    description: 'ทีมงานที่ทำงานด้านการวิจัยและพัฒนาเทคโนโลยี AI สำหรับองค์กร พร้อมช่องทางสื่อสารภายในทีม',
     createdDate: new Date('2024-01-01'),
     memberCount: 8,
     plan: 'pro',
@@ -152,7 +218,9 @@ const Teams: React.FC = () => {
       allowInvites: true,
       requireApproval: false,
       defaultRole: 'member',
-      billingEmail: 'admin@company.com'
+      billingEmail: 'admin@company.com',
+      chatPlatform: 'google',
+      chatChannelId: 'spaces/AAAA1234567890'
     }
   };
 
@@ -163,6 +231,7 @@ const Teams: React.FC = () => {
       email: 'somchai@company.com',
       role: 'owner',
       status: 'active',
+      onlineStatus: 'online',
       joinDate: new Date('2024-01-01'),
       lastActive: new Date(),
       department: 'วิจัยและพัฒนา',
@@ -188,6 +257,7 @@ const Teams: React.FC = () => {
       email: 'patma@company.com',
       role: 'admin',
       status: 'active',
+      onlineStatus: 'away',
       joinDate: new Date('2024-01-05'),
       lastActive: new Date(Date.now() - 3600000),
       department: 'การตลาด',
@@ -213,6 +283,7 @@ const Teams: React.FC = () => {
       email: 'anucha@university.ac.th',
       role: 'member',
       status: 'active',
+      onlineStatus: 'busy',
       joinDate: new Date('2024-01-10'),
       lastActive: new Date(Date.now() - 7200000),
       department: 'วิจัย',
@@ -237,6 +308,7 @@ const Teams: React.FC = () => {
       email: 'wichai@company.com',
       role: 'member',
       status: 'active',
+      onlineStatus: 'online',
       joinDate: new Date('2024-01-15'),
       lastActive: new Date(Date.now() - 86400000),
       department: 'เทคโนโลยี',
@@ -261,6 +333,7 @@ const Teams: React.FC = () => {
       email: 'suda@company.com',
       role: 'viewer',
       status: 'pending',
+      onlineStatus: 'offline',
       joinDate: new Date('2024-01-20'),
       lastActive: new Date(Date.now() - 172800000),
       department: 'วิเคราะห์',
@@ -278,6 +351,82 @@ const Teams: React.FC = () => {
         favoriteModel: 'Perplexity',
         lastUsed: new Date(Date.now() - 172800000)
       }
+    }
+  ];
+
+  const mockChannels: ChatChannel[] = [
+    {
+      id: 'general',
+      name: 'ทั่วไป',
+      description: 'ช่องทางสำหรับการสนทนาทั่วไป',
+      type: 'general',
+      memberCount: 8,
+      unreadCount: 3,
+      isPrivate: false
+    },
+    {
+      id: 'ai-research',
+      name: 'งานวิจัย AI',
+      description: 'อภิปรายเกี่ยวกับงานวิจัย AI',
+      type: 'project',
+      memberCount: 5,
+      unreadCount: 0,
+      isPrivate: false
+    },
+    {
+      id: 'announcements',
+      name: 'ประกาศ',
+      description: 'ประกาศสำคัญของทีม',
+      type: 'announcements',
+      memberCount: 8,
+      unreadCount: 1,
+      isPrivate: false
+    },
+    {
+      id: 'random',
+      name: 'สุ่มสี่สุ่มห้า',
+      description: 'คุยเรื่องอื่นๆ นอกเหนือจากงาน',
+      type: 'random',
+      memberCount: 6,
+      unreadCount: 0,
+      isPrivate: false
+    }
+  ];
+
+  const mockMessages: ChatMessage[] = [
+    {
+      id: '1',
+      content: 'สวัสดีครับทุกคน! วันนี้เราจะมาประชุมเรื่องการพัฒนา AI Model ใหม่',
+      sender: mockMembers[0],
+      timestamp: new Date(Date.now() - 3600000),
+      type: 'text'
+    },
+    {
+      id: '2',
+      content: 'ได้ครับ ผมเตรียมข้อมูลมาแล้ว จะแชร์ในการประชุม',
+      sender: mockMembers[1],
+      timestamp: new Date(Date.now() - 3300000),
+      type: 'text',
+      reactions: [
+        { emoji: '👍', users: ['1', '3'] }
+      ]
+    },
+    {
+      id: '3',
+      content: 'มีข้อมูลเกี่ยวกับ Claude 3.5 ที่น่าสนใจมาแชร์ครับ',
+      sender: mockMembers[2],
+      timestamp: new Date(Date.now() - 1800000),
+      type: 'text'
+    },
+    {
+      id: '4',
+      content: 'เยี่ยมเลย! รอดูครับ 🚀',
+      sender: mockMembers[3],
+      timestamp: new Date(Date.now() - 900000),
+      type: 'text',
+      reactions: [
+        { emoji: '🚀', users: ['1', '2'] }
+      ]
     }
   ];
 
@@ -306,7 +455,29 @@ const Teams: React.FC = () => {
     setCurrentTeam(mockTeam);
     setMembers(mockMembers);
     setInvitations(mockInvitations);
+    setChatChannels(mockChannels);
+    setChatMessages(mockMessages);
   }, []);
+
+  const getOnlineStatusColor = (status: string) => {
+    switch (status) {
+      case 'online': return 'bg-green-500';
+      case 'away': return 'bg-yellow-500';
+      case 'busy': return 'bg-red-500';
+      case 'offline': return 'bg-gray-400';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  const getOnlineStatusLabel = (status: string) => {
+    switch (status) {
+      case 'online': return 'ออนไลน์';
+      case 'away': return 'ไม่อยู่';
+      case 'busy': return 'ไม่ว่าง';
+      case 'offline': return 'ออฟไลน์';
+      default: return 'ไม่ทราบ';
+    }
+  };
 
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -377,6 +548,35 @@ const Teams: React.FC = () => {
     return `${days} วันที่แล้ว`;
   };
 
+  const formatMessageTime = (date: Date) => {
+    return date.toLocaleTimeString('th-TH', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return;
+
+    const message: ChatMessage = {
+      id: Date.now().toString(),
+      content: newMessage,
+      sender: mockMembers[0], // Current user
+      timestamp: new Date(),
+      type: 'text'
+    };
+
+    setChatMessages(prev => [...prev, message]);
+    setNewMessage('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   const handleInviteMember = async () => {
     if (!inviteEmail.trim()) return;
     
@@ -439,6 +639,8 @@ const Teams: React.FC = () => {
     }
   };
 
+  const onlineMembers = members.filter(m => m.onlineStatus === 'online').length;
+
   if (!currentTeam) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -465,6 +667,14 @@ const Teams: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>{onlineMembers} ออนไลน์</span>
+              </div>
+              <span>•</span>
+              <span>{currentTeam.memberCount} สมาชิก</span>
+            </div>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPlanColor(currentTeam.plan)}`}>
               แพ็คเกจ {getPlanLabel(currentTeam.plan)}
             </span>
@@ -480,13 +690,6 @@ const Teams: React.FC = () => {
 
         {/* Team Stats */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="flex items-center space-x-2">
-              <Users className="h-4 w-4 text-blue-600" />
-              <span className="text-sm text-gray-600">สมาชิก</span>
-            </div>
-            <p className="text-lg font-semibold text-gray-900">{currentTeam.memberCount}</p>
-          </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center space-x-2">
               <MessageSquare className="h-4 w-4 text-green-600" />
@@ -510,6 +713,13 @@ const Teams: React.FC = () => {
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center space-x-2">
+              <MessageCircle className="h-4 w-4 text-blue-600" />
+              <span className="text-sm text-gray-600">ข้อความ</span>
+            </div>
+            <p className="text-lg font-semibold text-gray-900">{chatMessages.length}</p>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <div className="flex items-center space-x-2">
               <CreditCard className="h-4 w-4 text-red-600" />
               <span className="text-sm text-gray-600">เครดิต</span>
             </div>
@@ -522,9 +732,11 @@ const Teams: React.FC = () => {
         {/* Tabs */}
         <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
           {[
+            { id: 'overview', label: 'ภาพรวม', icon: BarChart3 },
+            { id: 'chat', label: 'แชททีม', icon: MessageCircle },
             { id: 'members', label: 'สมาชิก', icon: Users },
             { id: 'invitations', label: 'คำเชิญ', icon: Mail },
-            { id: 'usage', label: 'การใช้งาน', icon: BarChart3 },
+            { id: 'usage', label: 'การใช้งาน', icon: Activity },
             { id: 'settings', label: 'ตั้งค่า', icon: Settings }
           ].map((tab) => {
             const Icon = tab.icon;
@@ -545,6 +757,11 @@ const Teams: React.FC = () => {
                     {invitations.length}
                   </span>
                 )}
+                {tab.id === 'chat' && chatChannels.reduce((sum, ch) => sum + ch.unreadCount, 0) > 0 && (
+                  <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-2 py-0.5">
+                    {chatChannels.reduce((sum, ch) => sum + ch.unreadCount, 0)}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -552,9 +769,278 @@ const Teams: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-hidden">
+        {activeTab === 'overview' && (
+          <div className="p-6">
+            {/* Team Overview */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Online Members */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Users className="h-5 w-5 mr-2 text-green-600" />
+                  สมาชิกออนไลน์ ({onlineMembers}/{currentTeam.memberCount})
+                </h3>
+                <div className="space-y-3">
+                  {members.filter(m => m.onlineStatus === 'online').map((member) => (
+                    <div key={member.id} className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <User className="h-5 w-5 text-white" />
+                        </div>
+                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getOnlineStatusColor(member.onlineStatus)} rounded-full border-2 border-white`}></div>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{member.name}</p>
+                        <p className="text-sm text-gray-600">{member.department}</p>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        {getRoleIcon(member.role)}
+                        <span className="text-xs text-gray-500">{getRoleLabel(member.role)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Activity className="h-5 w-5 mr-2 text-blue-600" />
+                  กิจกรรมล่าสุด
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                    <MessageCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-gray-900">
+                        <span className="font-medium">คุณวิชัย</span> ส่งข้อความในช่อง #งานวิจัย-ai
+                      </p>
+                      <p className="text-xs text-gray-500">5 นาทีที่แล้ว</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
+                    <FileText className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-gray-900">
+                        <span className="font-medium">คุณปัทมา</span> อัปโหลดเอกสาร "แผนกลยุทธ์ 2025"
+                      </p>
+                      <p className="text-xs text-gray-500">1 ชั่วโมงที่แล้ว</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg">
+                    <UserPlus className="h-5 w-5 text-purple-600 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-gray-900">
+                        <span className="font-medium">คุณสมชาย</span> เชิญสมาชิกใหม่เข้าทีม
+                      </p>
+                      <p className="text-xs text-gray-500">2 ชั่วโมงที่แล้ว</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Platform Integration */}
+            <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <MessageSquare className="h-5 w-5 mr-2 text-blue-600" />
+                การเชื่อมต่อแชท
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <MessageSquare className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-blue-900">Google Chat</h4>
+                    <p className="text-sm text-blue-700">เชื่อมต่อแล้ว</p>
+                    <p className="text-xs text-blue-600">Space: AI Research Team</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span className="text-sm text-green-600">ใช้งานอยู่</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="w-12 h-12 bg-gray-400 rounded-lg flex items-center justify-center">
+                    <Video className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">Microsoft Teams</h4>
+                    <p className="text-sm text-gray-600">ยังไม่เชื่อมต่อ</p>
+                  </div>
+                  <button className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                    เชื่อมต่อ
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'chat' && (
+          <div className="h-full flex">
+            {/* Chat Channels Sidebar */}
+            <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+              <div className="p-4 border-b border-gray-200">
+                <h3 className="font-semibold text-gray-900 mb-3">ช่องทางสนทนา</h3>
+                <div className="space-y-1">
+                  {chatChannels.map((channel) => (
+                    <button
+                      key={channel.id}
+                      onClick={() => setSelectedChannel(channel.id)}
+                      className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors ${
+                        selectedChannel === channel.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Hash className="h-4 w-4" />
+                        <span className="text-sm font-medium">{channel.name}</span>
+                      </div>
+                      {channel.unreadCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+                          {channel.unreadCount}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Online Members */}
+              <div className="flex-1 p-4">
+                <h4 className="font-medium text-gray-900 mb-3">สมาชิกออนไลน์</h4>
+                <div className="space-y-2">
+                  {members.filter(m => m.onlineStatus !== 'offline').map((member) => (
+                    <div key={member.id} className="flex items-center space-x-2">
+                      <div className="relative">
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <User className="h-4 w-4 text-white" />
+                        </div>
+                        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 ${getOnlineStatusColor(member.onlineStatus)} rounded-full border border-white`}></div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{member.name}</p>
+                        <p className="text-xs text-gray-500">{getOnlineStatusLabel(member.onlineStatus)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Area */}
+            <div className="flex-1 flex flex-col">
+              {/* Chat Header */}
+              <div className="bg-white border-b border-gray-200 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Hash className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        {chatChannels.find(ch => ch.id === selectedChannel)?.name}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {chatChannels.find(ch => ch.id === selectedChannel)?.description}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Video className="h-5 w-5" />
+                    </button>
+                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <PhoneCall className="h-5 w-5" />
+                    </button>
+                    <button 
+                      onClick={() => setShowChatSettings(!showChatSettings)}
+                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <Settings className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {chatMessages.map((message) => (
+                  <div key={message.id} className="flex items-start space-x-3">
+                    <div className="relative">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 ${getOnlineStatusColor(message.sender.onlineStatus)} rounded-full border border-white`}></div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="font-medium text-gray-900">{message.sender.name}</span>
+                        <span className="text-xs text-gray-500">{formatMessageTime(message.timestamp)}</span>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3 max-w-2xl">
+                        <p className="text-gray-700">{message.content}</p>
+                      </div>
+                      {message.reactions && message.reactions.length > 0 && (
+                        <div className="flex items-center space-x-2 mt-2">
+                          {message.reactions.map((reaction, index) => (
+                            <button
+                              key={index}
+                              className="flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 rounded-full px-2 py-1 transition-colors"
+                            >
+                              <span className="text-sm">{reaction.emoji}</span>
+                              <span className="text-xs text-blue-600">{reaction.users.length}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Message Input */}
+              <div className="bg-white border-t border-gray-200 p-4">
+                <div className="flex items-end space-x-3">
+                  <div className="flex space-x-2">
+                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Paperclip className="h-5 w-5" />
+                    </button>
+                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Image className="h-5 w-5" />
+                    </button>
+                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Smile className="h-5 w-5" />
+                    </button>
+                  </div>
+                  
+                  <div className="flex-1 relative">
+                    <textarea
+                      ref={chatInputRef}
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="พิมพ์ข้อความ..."
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      rows={1}
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim()}
+                    className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Send className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'members' && (
-          <div>
+          <div className="p-6">
             {/* Search and Filters */}
             <div className="flex items-center space-x-4 mb-6">
               <div className="flex-1 relative">
@@ -601,8 +1087,11 @@ const Teams: React.FC = () => {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <User className="h-6 w-6 text-white" />
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <User className="h-6 w-6 text-white" />
+                        </div>
+                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getOnlineStatusColor(member.onlineStatus)} rounded-full border-2 border-white`}></div>
                       </div>
                       
                       <div className="flex-1">
@@ -612,6 +1101,14 @@ const Teams: React.FC = () => {
                           <span className="text-sm text-gray-600">{getRoleLabel(member.role)}</span>
                           {getStatusIcon(member.status)}
                           <span className="text-sm text-gray-600">{getStatusLabel(member.status)}</span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            member.onlineStatus === 'online' ? 'bg-green-100 text-green-800' :
+                            member.onlineStatus === 'away' ? 'bg-yellow-100 text-yellow-800' :
+                            member.onlineStatus === 'busy' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {getOnlineStatusLabel(member.onlineStatus)}
+                          </span>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
@@ -699,7 +1196,7 @@ const Teams: React.FC = () => {
         )}
 
         {activeTab === 'invitations' && (
-          <div>
+          <div className="p-6">
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">คำเชิญที่รอการตอบรับ</h2>
               
@@ -763,7 +1260,7 @@ const Teams: React.FC = () => {
         )}
 
         {activeTab === 'usage' && (
-          <div>
+          <div className="p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-6">การใช้งานของทีม</h2>
             
             {/* Usage Overview */}
@@ -844,8 +1341,11 @@ const Teams: React.FC = () => {
                         <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
                           <span className="text-sm font-medium text-blue-600">#{index + 1}</span>
                         </div>
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                          <User className="h-5 w-5 text-white" />
+                        <div className="relative">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <User className="h-5 w-5 text-white" />
+                          </div>
+                          <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 ${getOnlineStatusColor(member.onlineStatus)} rounded-full border border-white`}></div>
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">{member.name}</p>
@@ -864,7 +1364,7 @@ const Teams: React.FC = () => {
         )}
 
         {activeTab === 'settings' && (
-          <div>
+          <div className="p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-6">ตั้งค่าทีม</h2>
             
             <div className="space-y-6">
@@ -887,6 +1387,49 @@ const Teams: React.FC = () => {
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
+                  </div>
+                </div>
+              </div>
+
+              {/* Chat Platform Settings */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">การตั้งค่าแชท</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">แพลตฟอร์มแชท</label>
+                    <select 
+                      value={currentTeam.settings.chatPlatform}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="google">Google Chat</option>
+                      <option value="microsoft">Microsoft Teams</option>
+                      <option value="both">ทั้งสองแพลตฟอร์ม</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Channel/Space ID</label>
+                    <input
+                      type="text"
+                      value={currentTeam.settings.chatChannelId || ''}
+                      placeholder="spaces/AAAA1234567890"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-blue-900 mb-2">การเชื่อมต่อแชท</h4>
+                    <p className="text-sm text-blue-700 mb-3">
+                      เชื่อมต่อกับ Google Chat หรือ Microsoft Teams เพื่อให้ทีมสามารถสื่อสารกันได้โดยตรง
+                    </p>
+                    <div className="flex space-x-3">
+                      <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        เชื่อมต่อ Google Chat
+                      </button>
+                      <button className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                        เชื่อมต่อ Microsoft Teams
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1066,8 +1609,11 @@ const Teams: React.FC = () => {
           <div className="bg-white rounded-xl w-full max-w-2xl h-5/6 flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <User className="h-6 w-6 text-white" />
+                <div className="relative">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <User className="h-6 w-6 text-white" />
+                  </div>
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getOnlineStatusColor(selectedMember.onlineStatus)} rounded-full border-2 border-white`}></div>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{selectedMember.name}</h3>
@@ -1139,7 +1685,7 @@ const Teams: React.FC = () => {
 
                 {/* Usage Statistics */}
                 <div>
-                  <h4 className="text-lg font-medium text-gray-900 mb-4">สstatistics การใช้งาน</h4>
+                  <h4 className="text-lg font-medium text-gray-900 mb-4">สถิติการใช้งาน</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-blue-50 rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-2">
