@@ -253,6 +253,14 @@ export default function ChatAI() {
   const [showHistorySidebar, setShowHistorySidebar] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>(mockChatHistory);
   const [searchHistory, setSearchHistory] = useState('');
+  const [showApiSettings, setShowApiSettings] = useState(false);
+  const [apiKeys, setApiKeys] = useState<{[key: string]: string}>({
+    'gpt-4': '',
+    'claude': '',
+    'gemini': '',
+    'perplexity': '',
+    'router': ''
+  });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSendMessage = async () => {
@@ -359,6 +367,65 @@ export default function ChatAI() {
     return 'ควรตรวจสอบเพิ่มเติม';
   };
 
+  const getApiKeyStatus = (modelId: string) => {
+    return apiKeys[modelId] && apiKeys[modelId].length > 0;
+  };
+
+  const getApiKeyLink = (modelId: string) => {
+    switch (modelId) {
+      case 'gpt-4':
+        return 'https://platform.openai.com/api-keys';
+      case 'claude':
+        return 'https://console.anthropic.com/';
+      case 'gemini':
+        return 'https://makersuite.google.com/app/apikey';
+      case 'perplexity':
+        return 'https://www.perplexity.ai/settings/api';
+      default:
+        return '#';
+    }
+  };
+
+  const getApiKeyDescription = (modelId: string) => {
+    switch (modelId) {
+      case 'gpt-4':
+        return 'ใช้ API Key จาก OpenAI Platform เพื่อเข้าถึง GPT-4 และ GPT-3.5 Turbo';
+      case 'claude':
+        return 'ใช้ API Key จาก Anthropic Console เพื่อเข้าถึง Claude 3.5 Sonnet';
+      case 'gemini':
+        return 'ใช้ API Key จาก Google AI Studio เพื่อเข้าถึง Gemini Pro';
+      case 'perplexity':
+        return 'ใช้ API Key จาก Perplexity เพื่อเข้าถึงการค้นหาแบบ Real-time';
+      case 'router':
+        return 'AI Router จะใช้ API Key ที่คุณตั้งค่าไว้เพื่อเลือก AI ที่เหมาะสมอัตโนมัติ';
+      default:
+        return '';
+    }
+  };
+
+  const handleSaveApiKey = (modelId: string, apiKey: string) => {
+    setApiKeys(prev => ({
+      ...prev,
+      [modelId]: apiKey
+    }));
+    // TODO: Save to localStorage or backend
+    localStorage.setItem(`api_key_${modelId}`, apiKey);
+  };
+
+  const handleLoadApiKeys = () => {
+    const keys: {[key: string]: string} = {};
+    Object.keys(apiKeys).forEach(modelId => {
+      const savedKey = localStorage.getItem(`api_key_${modelId}`);
+      if (savedKey) {
+        keys[modelId] = savedKey;
+      }
+    });
+    setApiKeys(prev => ({ ...prev, ...keys }));
+  };
+
+  React.useEffect(() => {
+    handleLoadApiKeys();
+  }, []);
   const filteredHistory = chatHistory.filter(chat =>
     chat.title.toLowerCase().includes(searchHistory.toLowerCase())
   );
@@ -606,20 +673,34 @@ export default function ChatAI() {
             {/* AI Selector */}
             <div className="mb-4">
               <div className="relative">
-                <button
-                  onClick={() => setShowAIDropdown(!showAIDropdown)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-sm border border-gray-200"
-                >
-                  <selectedAI.icon className={`w-4 h-4 ${selectedAI.color}`} />
-                  <span className="font-medium">{selectedAI.name}</span>
-                  <span className="text-gray-500">฿{selectedAI.cost.toFixed(3)}</span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setShowAIDropdown(!showAIDropdown)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-sm border border-gray-200"
+                  >
+                    <selectedAI.icon className={`w-4 h-4 ${selectedAI.color}`} />
+                    <span className="font-medium">{selectedAI.name}</span>
+                    {getApiKeyStatus(selectedAI.id) && (
+                      <div className="w-2 h-2 bg-green-500 rounded-full" title="API Key ตั้งค่าแล้ว" />
+                    )}
+                    <span className="text-gray-500">฿{selectedAI.cost.toFixed(3)}</span>
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowApiSettings(true)}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    title="ตั้งค่า API Keys"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                </div>
 
                 {showAIDropdown && (
                   <div className="absolute bottom-full mb-2 left-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-2 z-10">
                     {aiModels.map((model) => {
                       const IconComponent = model.icon;
+                      const hasApiKey = getApiKeyStatus(model.id);
                       return (
                         <button
                           key={model.id}
@@ -627,18 +708,26 @@ export default function ChatAI() {
                             setSelectedAI(model);
                             setShowAIDropdown(false);
                           }}
-                          className={`w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors ${
+                          className={`w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors relative ${
                             selectedAI.id === model.id ? 'bg-blue-50 border border-blue-200' : ''
                           }`}
                         >
                           <IconComponent className={`w-5 h-5 ${model.color}`} />
                           <div className="flex-1 text-left">
                             <div className="flex items-center justify-between">
-                              <span className="font-medium text-gray-900">{model.name}</span>
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium text-gray-900">{model.name}</span>
+                                {hasApiKey && (
+                                  <div className="w-2 h-2 bg-green-500 rounded-full" title="API Key ตั้งค่าแล้ว" />
+                                )}
+                              </div>
                               <span className="text-sm text-gray-500">฿{model.cost.toFixed(3)}</span>
                             </div>
                             <div className="text-sm text-gray-500">{model.description}</div>
                             <div className="text-xs text-gray-400">{model.specialty}</div>
+                            {!hasApiKey && model.id !== 'router' && (
+                              <div className="text-xs text-orange-600 mt-1">ต้องตั้งค่า API Key</div>
+                            )}
                           </div>
                         </button>
                       );
@@ -749,6 +838,153 @@ export default function ChatAI() {
                     </div>
                   </button>
                 ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* API Settings Modal */}
+      {showApiSettings && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setShowApiSettings(false)}
+          />
+          
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-xl">
+              {/* Header */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-gray-900">ตั้งค่า API Keys</h3>
+                  <button
+                    onClick={() => setShowApiSettings(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  ตั้งค่า API Key ของคุณเองเพื่อใช้งาน AI แต่ละตัวโดยตรง
+                </p>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="space-y-6">
+                  {aiModels.filter(model => model.id !== 'router').map((model) => {
+                    const IconComponent = model.icon;
+                    const hasApiKey = getApiKeyStatus(model.id);
+                    const currentApiKey = apiKeys[model.id] || '';
+                    
+                    return (
+                      <div key={model.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <div className={`${model.color} p-2 rounded-lg`}>
+                            <IconComponent className="h-5 w-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h4 className="font-medium text-gray-900">{model.name}</h4>
+                              {hasApiKey && (
+                                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                  ตั้งค่าแล้ว
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{getApiKeyDescription(model.id)}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              API Key
+                            </label>
+                            <div className="flex space-x-2">
+                              <input
+                                type="password"
+                                value={currentApiKey}
+                                onChange={(e) => setApiKeys(prev => ({
+                                  ...prev,
+                                  [model.id]: e.target.value
+                                }))}
+                                placeholder={`ใส่ ${model.name} API Key`}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              />
+                              <button
+                                onClick={() => handleSaveApiKey(model.id, currentApiKey)}
+                                disabled={!currentApiKey.trim()}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                              >
+                                บันทึก
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm">
+                            <a
+                              href={getApiKeyLink(model.id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-700 flex items-center space-x-1"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              <span>รับ API Key</span>
+                            </a>
+                            
+                            {hasApiKey && (
+                              <button
+                                onClick={() => {
+                                  setApiKeys(prev => ({ ...prev, [model.id]: '' }));
+                                  localStorage.removeItem(`api_key_${model.id}`);
+                                }}
+                                className="text-red-600 hover:text-red-700 text-sm"
+                              >
+                                ลบ API Key
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* AI Router Info */}
+                  <div className="border border-gray-200 rounded-lg p-4 bg-yellow-50">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="bg-yellow-500 p-2 rounded-lg">
+                        <Zap className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">AI Router</h4>
+                        <p className="text-sm text-gray-600">
+                          AI Router จะใช้ API Key ที่คุณตั้งค่าไว้เพื่อเลือก AI ที่เหมาะสมอัตโนมัติ
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <p>• หาก API Key หมด จะใช้เครดิตของระบบแทน</p>
+                      <p>• ประหยัดค่าใช้จ่ายได้มากที่สุด</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Footer */}
+              <div className="border-t border-gray-200 p-6">
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-gray-600">
+                    <p>🔒 API Key จะถูกเก็บไว้ในเครื่องของคุณเท่านั้น</p>
+                  </div>
+                  <button
+                    onClick={() => setShowApiSettings(false)}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    ปิด
+                  </button>
+                </div>
               </div>
             </div>
           </div>
