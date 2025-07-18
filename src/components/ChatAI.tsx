@@ -38,6 +38,26 @@ import {
   Menu,
   PanelRightOpen,
   PanelRightClose
+  UserPlus,
+  Video,
+  Phone,
+  Mail,
+  Circle,
+  Wifi,
+  WifiOff,
+  Crown,
+  Shield,
+  Eye,
+  Settings,
+  LogOut,
+  Bell,
+  BellOff,
+  Link,
+  Calendar,
+  MapPin,
+  Briefcase as BriefcaseIcon,
+  GraduationCap as GradIcon,
+  Building as BuildingIcon
 } from 'lucide-react';
 
 interface Message {
@@ -57,6 +77,35 @@ interface Message {
   followUpQuestions?: string[];
 }
 
+interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  status: 'online' | 'away' | 'busy' | 'offline';
+  role: 'owner' | 'admin' | 'member' | 'viewer';
+  department?: string;
+  position?: string;
+  lastSeen?: Date;
+  isInCurrentChat: boolean;
+  provider: 'google' | 'microsoft' | 'local';
+  timezone?: string;
+  workingHours?: {
+    start: string;
+    end: string;
+  };
+}
+
+interface ChatInvitation {
+  id: string;
+  fromUser: string;
+  toUser: string;
+  chatTitle: string;
+  message?: string;
+  timestamp: Date;
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+}
+
 interface ChatHistory {
   id: string;
   title: string;
@@ -65,6 +114,7 @@ interface ChatHistory {
   totalCost: number;
   lastUpdated: Date;
   messageCount: number;
+  participants?: string[];
 }
 
 const aiModels = [
@@ -253,7 +303,99 @@ export default function ChatAI() {
   const [showHistorySidebar, setShowHistorySidebar] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>(mockChatHistory);
   const [searchHistory, setSearchHistory] = useState('');
+  const [showTeamSidebar, setShowTeamSidebar] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [chatInvitations, setChatInvitations] = useState<ChatInvitation[]>([]);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [inviteMessage, setInviteMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Mock team members data
+  const mockTeamMembers: TeamMember[] = [
+    {
+      id: '1',
+      name: 'คุณสมชาย วิทยากร',
+      email: 'somchai@company.com',
+      status: 'online',
+      role: 'owner',
+      department: 'วิจัยและพัฒนา',
+      position: 'หัวหน้าทีม',
+      isInCurrentChat: false,
+      provider: 'google',
+      timezone: 'Asia/Bangkok',
+      workingHours: { start: '09:00', end: '18:00' }
+    },
+    {
+      id: '2',
+      name: 'คุณปัทมา ธุรกิจ',
+      email: 'patma@company.com',
+      status: 'online',
+      role: 'admin',
+      department: 'การตลาด',
+      position: 'ผู้จัดการโครงการ',
+      isInCurrentChat: true,
+      provider: 'microsoft',
+      lastSeen: new Date(Date.now() - 300000),
+      workingHours: { start: '08:30', end: '17:30' }
+    },
+    {
+      id: '3',
+      name: 'คุณอนุชา นักศึกษา',
+      email: 'anucha@university.ac.th',
+      status: 'away',
+      role: 'member',
+      department: 'วิจัย',
+      position: 'นักศึกษาปริญญาโท',
+      isInCurrentChat: false,
+      provider: 'google',
+      lastSeen: new Date(Date.now() - 1800000),
+      workingHours: { start: '10:00', end: '16:00' }
+    },
+    {
+      id: '4',
+      name: 'คุณวิชัย เทคนิค',
+      email: 'wichai@company.com',
+      status: 'busy',
+      role: 'member',
+      department: 'เทคโนโลยี',
+      position: 'นักพัฒนาระบบ',
+      isInCurrentChat: false,
+      provider: 'microsoft',
+      lastSeen: new Date(Date.now() - 600000),
+      workingHours: { start: '09:00', end: '18:00' }
+    },
+    {
+      id: '5',
+      name: 'คุณสุดา วิเคราะห์',
+      email: 'suda@company.com',
+      status: 'offline',
+      role: 'viewer',
+      department: 'วิเคราะห์',
+      position: 'นักวิเคราะห์ข้อมูล',
+      isInCurrentChat: false,
+      provider: 'google',
+      lastSeen: new Date(Date.now() - 7200000),
+      workingHours: { start: '08:00', end: '17:00' }
+    }
+  ];
+
+  const mockInvitations: ChatInvitation[] = [
+    {
+      id: '1',
+      fromUser: 'คุณปัทมา ธุรกิจ',
+      toUser: 'คุณสมชาย วิทยากร',
+      chatTitle: 'วิเคราะห์ตลาดหุ้นไทย',
+      message: 'มาช่วยวิเคราะห์ข้อมูลตลาดหุ้นด้วยกันครับ',
+      timestamp: new Date(Date.now() - 300000),
+      status: 'pending'
+    }
+  ];
+
+  useEffect(() => {
+    setTeamMembers(mockTeamMembers);
+    setChatInvitations(mockInvitations);
+  }, []);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -369,6 +511,89 @@ export default function ChatAI() {
     setShowHistorySidebar(false);
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'online': return 'bg-green-500';
+      case 'away': return 'bg-yellow-500';
+      case 'busy': return 'bg-red-500';
+      case 'offline': return 'bg-gray-400';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'online': return 'ออนไลน์';
+      case 'away': return 'ไม่อยู่';
+      case 'busy': return 'ไม่ว่าง';
+      case 'offline': return 'ออฟไลน์';
+      default: return 'ไม่ทราบ';
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'owner': return <Crown className="h-3 w-3 text-yellow-500" />;
+      case 'admin': return <Shield className="h-3 w-3 text-blue-500" />;
+      case 'member': return <Users className="h-3 w-3 text-green-500" />;
+      case 'viewer': return <Eye className="h-3 w-3 text-gray-500" />;
+      default: return null;
+    }
+  };
+
+  const getProviderIcon = (provider: string) => {
+    switch (provider) {
+      case 'google': return '🔵'; // Google
+      case 'microsoft': return '🟦'; // Microsoft
+      case 'local': return '⚪'; // Local
+      default: return '⚪';
+    }
+  };
+
+  const formatLastSeen = (date?: Date) => {
+    if (!date) return '';
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    
+    if (minutes < 1) return 'เมื่อสักครู่';
+    if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
+    if (hours < 24) return `${hours} ชั่วโมงที่แล้ว`;
+    return date.toLocaleDateString('th-TH');
+  };
+
+  const handleInviteToChat = () => {
+    if (selectedMembers.length === 0) return;
+    
+    // Simulate sending invitations
+    const newInvitations = selectedMembers.map(memberId => ({
+      id: Date.now().toString() + memberId,
+      fromUser: 'คุณ',
+      toUser: teamMembers.find(m => m.id === memberId)?.name || '',
+      chatTitle: messages.length > 0 ? 'การสนทนา AI' : 'แชทใหม่',
+      message: inviteMessage,
+      timestamp: new Date(),
+      status: 'pending' as const
+    }));
+    
+    setChatInvitations(prev => [...prev, ...newInvitations]);
+    setSelectedMembers([]);
+    setInviteMessage('');
+    setShowInviteModal(false);
+  };
+
+  const toggleMemberSelection = (memberId: string) => {
+    setSelectedMembers(prev => 
+      prev.includes(memberId) 
+        ? prev.filter(id => id !== memberId)
+        : [...prev, memberId]
+    );
+  };
+
+  const onlineMembers = teamMembers.filter(m => m.status === 'online' || m.status === 'away');
+  const currentChatParticipants = teamMembers.filter(m => m.isInCurrentChat);
+
   return (
     <div className="h-full flex bg-gray-50 relative">
       {/* Main Chat Area */}
@@ -394,6 +619,99 @@ export default function ChatAI() {
               <button
                 onClick={() => setShowHistorySidebar(!showHistorySidebar)}
                 className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                  showHistorySidebar 
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <History className="h-4 w-4 mr-2" />
+                ประวัติ
+              </button>
+              <button
+                onClick={() => setShowTeamSidebar(!showTeamSidebar)}
+                className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                  showTeamSidebar 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Users className="h-4 w-4 mr-2" />
+                ทีม ({onlineMembers.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Current Chat Participants */}
+          {currentChatParticipants.length > 0 && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <Users className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium text-green-800">กำลังร่วมแชท ({currentChatParticipants.length + 1})</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-xs text-white font-medium">คุณ</span>
+                  </div>
+                </div>
+                {currentChatParticipants.map((member) => (
+                  <div key={member.id} className="flex items-center space-x-1">
+                    <div className="relative">
+                      <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <span className="text-xs text-white font-medium">{member.name.charAt(2)}</span>
+                      </div>
+                      <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${getStatusColor(member.status)}`} />
+                    </div>
+                  </div>
+                ))}
+                <button
+                  onClick={() => setShowInviteModal(true)}
+                  className="w-6 h-6 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors"
+                >
+                  <Plus className="h-3 w-3 text-gray-600" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto">
+          {messages.length === 0 ? (
+            /* Welcome Screen */}
+            <div className="h-full flex flex-col items-center justify-center p-8">
+              <div className="max-w-4xl w-full">
+                {/* Team Collaboration Banner */}
+                <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-6 mb-8 border border-blue-200">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-blue-100 p-3 rounded-lg">
+                      <Users className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">ทำงานร่วมกันกับทีม</h3>
+                      <p className="text-gray-700 mb-3">
+                        เชิญสมาชิกในทีมมาร่วมสนทนากับ AI ได้แบบเรียลไทม์ ดูสถานะออนไลน์ผ่าน Google/Microsoft
+                      </p>
+                      <div className="flex items-center space-x-4">
+                        <button
+                          onClick={() => setShowInviteModal(true)}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          เชิญเข้าร่วมแชท
+                        </button>
+                        <button
+                          onClick={() => setShowTeamSidebar(true)}
+                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                        >
+                          <Users className="h-4 w-4 mr-2" />
+                          ดูทีม ({onlineMembers.length} ออนไลน์)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                   showHistorySidebar 
                     ? 'bg-blue-100 text-blue-700' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -686,6 +1004,163 @@ export default function ChatAI() {
         </div>
       </div>
 
+      {/* Team Sidebar - Left Side */}
+      {showTeamSidebar && (
+        <>
+          {/* Overlay for mobile */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setShowTeamSidebar(false)}
+          />
+          
+          {/* Sidebar */}
+          <div className="fixed left-0 top-0 h-full w-80 bg-white border-r border-gray-200 z-50 flex flex-col shadow-xl">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">ทีมของคุณ</h3>
+                <button
+                  onClick={() => setShowTeamSidebar(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
+                {onlineMembers.length} คนออนไลน์จาก {teamMembers.length} คน
+              </p>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="p-4 border-b border-gray-200">
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                เชิญเข้าร่วมแชท
+              </button>
+            </div>
+
+            {/* Online Members */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4">
+                <h4 className="text-sm font-medium text-gray-500 mb-3">ออนไลน์ ({onlineMembers.length})</h4>
+                <div className="space-y-2">
+                  {onlineMembers.map((member) => (
+                    <div
+                      key={member.id}
+                      className={`p-3 rounded-lg border transition-colors cursor-pointer ${
+                        member.isInCurrentChat 
+                          ? 'bg-green-50 border-green-200' 
+                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="relative">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span className="text-sm text-white font-medium">{member.name.charAt(2)}</span>
+                          </div>
+                          <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(member.status)}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2">
+                            <p className="text-sm font-medium text-gray-900 truncate">{member.name}</p>
+                            {getRoleIcon(member.role)}
+                            <span className="text-xs">{getProviderIcon(member.provider)}</span>
+                          </div>
+                          <p className="text-xs text-gray-600 truncate">{member.position}</p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              member.status === 'online' ? 'bg-green-100 text-green-800' :
+                              member.status === 'away' ? 'bg-yellow-100 text-yellow-800' :
+                              member.status === 'busy' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {getStatusLabel(member.status)}
+                            </span>
+                            {member.isInCurrentChat && (
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                ในแชท
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {!member.isInCurrentChat && (
+                        <div className="flex items-center space-x-2 mt-3">
+                          <button className="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-xs">
+                            เชิญเข้าแชท
+                          </button>
+                          <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+                            <MessageSquare className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Offline Members */}
+              <div className="p-4 border-t border-gray-200">
+                <h4 className="text-sm font-medium text-gray-500 mb-3">
+                  ออฟไลน์ ({teamMembers.filter(m => m.status === 'offline').length})
+                </h4>
+                <div className="space-y-2">
+                  {teamMembers.filter(m => m.status === 'offline').map((member) => (
+                    <div key={member.id} className="p-3 rounded-lg bg-gray-50 border border-gray-200 opacity-75">
+                      <div className="flex items-center space-x-3">
+                        <div className="relative">
+                          <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
+                            <span className="text-xs text-white font-medium">{member.name.charAt(2)}</span>
+                          </div>
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gray-400 rounded-full border-2 border-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-700 truncate">{member.name}</p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {member.lastSeen ? formatLastSeen(member.lastSeen) : 'ไม่ทราบ'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Invitations */}
+            {chatInvitations.filter(inv => inv.status === 'pending').length > 0 && (
+              <div className="border-t border-gray-200 p-4">
+                <h4 className="text-sm font-medium text-gray-500 mb-3">คำเชิญที่รอการตอบรับ</h4>
+                <div className="space-y-2">
+                  {chatInvitations.filter(inv => inv.status === 'pending').map((invitation) => (
+                    <div key={invitation.id} className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{invitation.toUser}</p>
+                          <p className="text-xs text-gray-600">{invitation.chatTitle}</p>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <button className="p-1 text-green-600 hover:bg-green-100 rounded">
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
+                          <button className="p-1 text-red-600 hover:bg-red-100 rounded">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
       {/* History Sidebar - Right Side */}
       {showHistorySidebar && (
         <>
@@ -753,6 +1228,98 @@ export default function ChatAI() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">เชิญเข้าร่วมแชท</h3>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">เลือกสมาชิกที่ต้องการเชิญ</label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {teamMembers.filter(m => !m.isInCurrentChat).map((member) => (
+                      <div
+                        key={member.id}
+                        className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                          selectedMembers.includes(member.id)
+                            ? 'bg-blue-50 border-blue-300'
+                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                        }`}
+                        onClick={() => toggleMemberSelection(member.id)}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="relative">
+                            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                              <span className="text-xs text-white font-medium">{member.name.charAt(2)}</span>
+                            </div>
+                            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${getStatusColor(member.status)}`} />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <p className="text-sm font-medium text-gray-900">{member.name}</p>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                member.status === 'online' ? 'bg-green-100 text-green-800' :
+                                member.status === 'away' ? 'bg-yellow-100 text-yellow-800' :
+                                member.status === 'busy' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {getStatusLabel(member.status)}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-600">{member.position}</p>
+                          </div>
+                          {selectedMembers.includes(member.id) && (
+                            <CheckCircle className="h-5 w-5 text-blue-600" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">ข้อความเชิญ (ไม่บังคับ)</label>
+                  <textarea
+                    value={inviteMessage}
+                    onChange={(e) => setInviteMessage(e.target.value)}
+                    placeholder="เขียนข้อความเชิญ..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => setShowInviteModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={handleInviteToChat}
+                  disabled={selectedMembers.length === 0}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  ส่งคำเชิญ ({selectedMembers.length})
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
