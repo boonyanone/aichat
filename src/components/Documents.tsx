@@ -109,6 +109,8 @@ const Documents: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
   const [newFolderName, setNewFolderName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showTeamShareModal, setShowTeamShareModal] = useState(false);
+  const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -216,6 +218,13 @@ const Documents: React.FC = () => {
       permissions: 'owner',
       category: 'contract'
     }
+  ];
+
+  // Mock teams data for sharing
+  const mockTeams = [
+    { id: '1', name: 'ทีมวิจัยและพัฒนา AI', memberCount: 4 },
+    { id: '2', name: 'ทีมการตลาดดิจิทัล', memberCount: 6 },
+    { id: '3', name: 'ทีมพัฒนาผลิตภัณฑ์', memberCount: 8 }
   ];
 
   const mockFolders: Folder[] = [
@@ -739,6 +748,16 @@ const Documents: React.FC = () => {
                       <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                         <Download className="h-4 w-4" />
                       </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDocument(doc);
+                          setShowTeamShareModal(true);
+                        }}
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        <Users className="h-4 w-4" />
+                      </button>
                       <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                         <MoreHorizontal className="h-4 w-4" />
                       </button>
@@ -975,6 +994,74 @@ const Documents: React.FC = () => {
                 <button className="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                   <Trash2 className="h-4 w-4 mr-2" />
                   ลบ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Team Share Modal */}
+      {showTeamShareModal && selectedDocument && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">แชร์เอกสารให้ทีม</h3>
+              <button
+                onClick={() => setShowTeamShareModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">{selectedDocument.name}</h4>
+                <p className="text-sm text-gray-600">เลือกทีมที่ต้องการแชร์เอกสารนี้</p>
+              </div>
+              
+              <div className="space-y-3">
+                {mockTeams.map((team) => (
+                  <label key={team.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedTeams.includes(team.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedTeams(prev => [...prev, team.id]);
+                        } else {
+                          setSelectedTeams(prev => prev.filter(id => id !== team.id));
+                        }
+                      }}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">{team.name}</p>
+                      <p className="text-xs text-gray-500">{team.memberCount} สมาชิก</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowTeamShareModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={() => {
+                    // Handle sharing logic here
+                    console.log('Sharing document to teams:', selectedTeams);
+                    setShowTeamShareModal(false);
+                    setSelectedTeams([]);
+                  }}
+                  disabled={selectedTeams.length === 0}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  แชร์ ({selectedTeams.length})
                 </button>
               </div>
             </div>

@@ -1,338 +1,556 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Users, 
-  Plus, 
-  Search, 
-  Filter, 
-  MoreHorizontal,
-  UserPlus,
+  MessageSquare, 
+  FileText, 
   Settings,
-  MessageSquare,
-  Video,
-  Phone,
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  X,
   Send,
   Paperclip,
-  Smile,
-  Hash,
-  Bell,
-  BellOff,
-  Star,
-  Pin,
-  Edit3,
-  Trash2,
-  Copy,
-  Share2,
-  Download,
-  Upload,
-  Eye,
-  EyeOff,
-  Clock,
-  Calendar,
-  Mail,
-  Shield,
-  Crown,
-  User,
-  Activity,
-  TrendingUp,
-  BarChart3,
-  Zap,
-  Brain,
-  FileText,
   Image,
   Mic,
-  Camera,
-  Link,
+  Phone,
+  Video,
+  Star,
+  Clock,
+  User,
+  Crown,
+  Shield,
+  Eye,
+  Edit3,
+  Share2,
+  Download,
+  Copy,
   ExternalLink,
   CheckCircle,
-  XCircle,
   AlertCircle,
   Info,
-  X,
-  ChevronDown,
-  ChevronRight,
-  Dot,
-  Folder,
-  FolderOpen,
-  BookOpen,
+  Zap,
+  Brain,
+  Globe,
+  Building,
+  Mail,
+  Calendar,
   Target,
   Award,
-  Key,
-  Globe,
-  Building
+  TrendingUp,
+  Activity,
+  Bookmark,
+  Flag,
+  Hash,
+  Lock,
+  Unlock,
+  UserPlus,
+  UserMinus,
+  RefreshCw,
+  Save,
+  Upload,
+  Link,
+  Folder,
+  FolderOpen,
+  FileCheck,
+  MessageCircle,
+  ThumbsUp,
+  ThumbsDown,
+  Heart,
+  Smile,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  ArrowRight,
+  ArrowLeft,
+  Maximize2,
+  Minimize2,
+  RotateCcw,
+  PenTool,
+  Type,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  List,
+  ListOrdered,
+  Quote,
+  Code,
+  Table,
+  ImageIcon,
+  LinkIcon,
+  Trash2,
+  Archive,
+  Bell,
+  BellOff
 } from 'lucide-react';
 
 interface TeamMember {
   id: string;
   name: string;
   email: string;
-  role: 'leader' | 'member';
+  role: 'team_leader' | 'co_leader' | 'member';
   avatar?: string;
   status: 'online' | 'away' | 'busy' | 'offline';
   joinDate: Date;
   lastActive: Date;
-  hasOwnAPI: boolean;
-  apiQuotaRemaining?: number;
-  permissions: string[];
+  hasPersonalAPI: boolean;
+  personalQuotaRemaining: number;
+  permissions: {
+    canCreateDocuments: boolean;
+    canEditSharedDocuments: boolean;
+    canInviteMembers: boolean;
+    canUseTeamAI: boolean;
+  };
+  contributionStats: {
+    documentsCreated: number;
+    documentsEdited: number;
+    messagesPosted: number;
+    aiQueriesUsed: number;
+  };
 }
 
 interface SharedDocument {
   id: string;
   title: string;
-  type: 'research' | 'report' | 'analysis' | 'summary';
-  sharedBy: string;
-  sharedDate: Date;
+  type: 'google_doc' | 'microsoft_word' | 'internal_doc';
+  url?: string;
+  content?: string;
+  createdBy: string;
+  createdDate: Date;
   lastModified: Date;
-  summary: string;
-  tags: string[];
+  lastModifiedBy: string;
   accessLevel: 'view' | 'comment' | 'edit';
-  viewCount: number;
-  commentCount: number;
+  linkedChannels: string[];
+  aiGenerated: boolean;
+  aiModel?: string;
+  aiCost?: number;
+  status: 'draft' | 'review' | 'approved' | 'archived';
+  collaborators: Array<{
+    userId: string;
+    permission: 'view' | 'comment' | 'edit';
+    lastAccessed: Date;
+  }>;
+  comments: Array<{
+    id: string;
+    userId: string;
+    content: string;
+    timestamp: Date;
+    resolved: boolean;
+  }>;
+  versions: Array<{
+    id: string;
+    version: number;
+    createdBy: string;
+    createdDate: Date;
+    changes: string;
+  }>;
 }
 
 interface ChatChannel {
   id: string;
   name: string;
   description: string;
-  type: 'general' | 'project' | 'document';
-  linkedDocuments?: string[];
+  type: 'general' | 'project' | 'document' | 'ai_research';
+  linkedDocuments: string[];
   memberCount: number;
   unreadCount: number;
   lastMessage?: {
-    user: string;
     content: string;
+    sender: string;
     timestamp: Date;
   };
+  isPrivate: boolean;
+  allowedMembers?: string[];
 }
 
 interface ChatMessage {
   id: string;
-  userId: string;
-  userName: string;
+  channelId: string;
+  senderId: string;
   content: string;
   timestamp: Date;
-  type: 'text' | 'file' | 'document_link';
-  linkedDocument?: string;
-  reactions?: { emoji: string; users: string[]; }[];
+  type: 'text' | 'file' | 'ai_result' | 'document_share' | 'system';
+  attachments?: Array<{
+    type: 'file' | 'image' | 'document';
+    name: string;
+    url: string;
+    size?: number;
+  }>;
+  aiContext?: {
+    query: string;
+    model: string;
+    cost: number;
+    result: string;
+  };
+  reactions: Array<{
+    emoji: string;
+    users: string[];
+  }>;
+  replies: ChatMessage[];
+  isEdited: boolean;
+  isPinned: boolean;
 }
 
-interface TeamInvitation {
+interface Team {
   id: string;
-  email: string;
-  role: 'member';
-  invitedBy: string;
-  invitedDate: Date;
-  status: 'pending' | 'accepted' | 'declined' | 'expired';
-  expiryDate: Date;
-  message?: string;
+  name: string;
+  description: string;
+  createdDate: Date;
+  members: TeamMember[];
+  channels: ChatChannel[];
+  sharedDocuments: SharedDocument[];
+  settings: {
+    allowPersonalAPI: boolean;
+    autoShareAIResults: boolean;
+    requireApprovalForDocuments: boolean;
+    chatIntegration: {
+      platform: 'google_chat' | 'microsoft_teams' | 'both' | 'internal';
+      workspaceId?: string;
+      channelMappings: Array<{
+        internalChannelId: string;
+        externalChannelId: string;
+      }>;
+    };
+    aiUsagePolicy: {
+      allowMembersToUseTeamAI: boolean;
+      maxQueriesPerMemberPerDay: number;
+      requireApprovalForExpensiveQueries: boolean;
+    };
+  };
+  usage: {
+    totalAIQueries: number;
+    totalCost: number;
+    documentsCreated: number;
+    messagesPosted: number;
+  };
 }
 
 const Teams: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'workspace' | 'documents' | 'members' | 'invitations' | 'settings'>('workspace');
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [sharedDocuments, setSharedDocuments] = useState<SharedDocument[]>([]);
-  const [chatChannels, setChatChannels] = useState<ChatChannel[]>([]);
+  const [activeTab, setActiveTab] = useState<'workspace' | 'documents' | 'members' | 'settings'>('workspace');
   const [selectedChannel, setSelectedChannel] = useState<string>('general');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [invitations, setInvitations] = useState<TeamInvitation[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [newInviteEmail, setNewInviteEmail] = useState('');
-  const [newInviteMessage, setNewInviteMessage] = useState('');
   const [selectedDocument, setSelectedDocument] = useState<SharedDocument | null>(null);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [showCreateDocModal, setShowCreateDocModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
 
   // Mock data
-  const mockMembers: TeamMember[] = [
-    {
-      id: '1',
-      name: 'นาย A (หัวหน้าทีม)',
-      email: 'leader@company.com',
-      role: 'leader',
-      status: 'online',
-      joinDate: new Date('2024-01-01'),
-      lastActive: new Date(),
-      hasOwnAPI: true,
-      permissions: ['manage_team', 'advanced_search', 'share_documents', 'manage_budget']
+  const mockTeam: Team = {
+    id: '1',
+    name: 'ทีมวิจัยและพัฒนา AI',
+    description: 'ทีมสำหรับการวิจัยและพัฒนาเทคโนโลยี AI เพื่อการทำงานร่วมกันอย่างมีประสิทธิภาพ',
+    createdDate: new Date('2024-01-01'),
+    members: [
+      {
+        id: '1',
+        name: 'นาย A (หัวหน้าทีม)',
+        email: 'team.leader@company.com',
+        role: 'team_leader',
+        status: 'online',
+        joinDate: new Date('2024-01-01'),
+        lastActive: new Date(),
+        hasPersonalAPI: true,
+        personalQuotaRemaining: 0, // ไม่จำกัด
+        permissions: {
+          canCreateDocuments: true,
+          canEditSharedDocuments: true,
+          canInviteMembers: true,
+          canUseTeamAI: true
+        },
+        contributionStats: {
+          documentsCreated: 15,
+          documentsEdited: 28,
+          messagesPosted: 156,
+          aiQueriesUsed: 89
+        }
+      },
+      {
+        id: '2',
+        name: 'คุณสมชาย นักวิจัย',
+        email: 'somchai@company.com',
+        role: 'member',
+        status: 'online',
+        joinDate: new Date('2024-01-05'),
+        lastActive: new Date(Date.now() - 300000),
+        hasPersonalAPI: true,
+        personalQuotaRemaining: 45,
+        permissions: {
+          canCreateDocuments: true,
+          canEditSharedDocuments: true,
+          canInviteMembers: false,
+          canUseTeamAI: true
+        },
+        contributionStats: {
+          documentsCreated: 8,
+          documentsEdited: 12,
+          messagesPosted: 89,
+          aiQueriesUsed: 34
+        }
+      },
+      {
+        id: '3',
+        name: 'คุณปัทมา นักวิเคราะห์',
+        email: 'patma@company.com',
+        role: 'member',
+        status: 'away',
+        joinDate: new Date('2024-01-08'),
+        lastActive: new Date(Date.now() - 1800000),
+        hasPersonalAPI: false,
+        personalQuotaRemaining: 0,
+        permissions: {
+          canCreateDocuments: false,
+          canEditSharedDocuments: true,
+          canInviteMembers: false,
+          canUseTeamAI: false
+        },
+        contributionStats: {
+          documentsCreated: 3,
+          documentsEdited: 18,
+          messagesPosted: 67,
+          aiQueriesUsed: 0
+        }
+      },
+      {
+        id: '4',
+        name: 'คุณอนุชา ผู้ช่วยวิจัย',
+        email: 'anucha@company.com',
+        role: 'member',
+        status: 'busy',
+        joinDate: new Date('2024-01-12'),
+        lastActive: new Date(Date.now() - 600000),
+        hasPersonalAPI: true,
+        personalQuotaRemaining: 12,
+        permissions: {
+          canCreateDocuments: true,
+          canEditSharedDocuments: true,
+          canInviteMembers: false,
+          canUseTeamAI: true
+        },
+        contributionStats: {
+          documentsCreated: 5,
+          documentsEdited: 9,
+          messagesPosted: 45,
+          aiQueriesUsed: 23
+        }
+      }
+    ],
+    channels: [
+      {
+        id: 'general',
+        name: 'ทั่วไป',
+        description: 'ช่องสำหรับการสนทนาทั่วไป',
+        type: 'general',
+        linkedDocuments: [],
+        memberCount: 4,
+        unreadCount: 3,
+        lastMessage: {
+          content: 'ผลการวิเคราะห์ออกมาแล้วครับ ดูในเอกสาร "รายงานการวิจัย AI Q1"',
+          sender: 'นาย A',
+          timestamp: new Date(Date.now() - 300000)
+        },
+        isPrivate: false
+      },
+      {
+        id: 'ai-research',
+        name: 'วิจัย AI',
+        description: 'ช่องสำหรับหารือเรื่องการวิจัย AI',
+        type: 'ai_research',
+        linkedDocuments: ['doc1', 'doc2'],
+        memberCount: 3,
+        unreadCount: 1,
+        lastMessage: {
+          content: 'ข้อมูลที่ได้จาก GPT-4 น่าสนใจมาก ลองดูในเอกสารครับ',
+          sender: 'คุณสมชาย',
+          timestamp: new Date(Date.now() - 1800000)
+        },
+        isPrivate: false
+      },
+      {
+        id: 'documents',
+        name: 'เอกสารร่วม',
+        description: 'ช่องสำหรับหารือเกี่ยวกับเอกสารที่แชร์',
+        type: 'document',
+        linkedDocuments: ['doc1', 'doc2', 'doc3'],
+        memberCount: 4,
+        unreadCount: 0,
+        isPrivate: false
+      }
+    ],
+    sharedDocuments: [
+      {
+        id: 'doc1',
+        title: 'รายงานการวิจัย AI Q1 2024',
+        type: 'google_doc',
+        url: 'https://docs.google.com/document/d/example1',
+        createdBy: '1',
+        createdDate: new Date('2024-01-15'),
+        lastModified: new Date('2024-01-16'),
+        lastModifiedBy: '2',
+        accessLevel: 'edit',
+        linkedChannels: ['ai-research', 'documents'],
+        aiGenerated: true,
+        aiModel: 'GPT-4',
+        aiCost: 2.45,
+        status: 'approved',
+        collaborators: [
+          { userId: '1', permission: 'edit', lastAccessed: new Date() },
+          { userId: '2', permission: 'edit', lastAccessed: new Date(Date.now() - 300000) },
+          { userId: '3', permission: 'comment', lastAccessed: new Date(Date.now() - 1800000) },
+          { userId: '4', permission: 'view', lastAccessed: new Date(Date.now() - 3600000) }
+        ],
+        comments: [
+          {
+            id: 'c1',
+            userId: '2',
+            content: 'ข้อมูลในส่วนที่ 3 น่าสนใจมาก ควรขยายความเพิ่มเติม',
+            timestamp: new Date(Date.now() - 7200000),
+            resolved: false
+          }
+        ],
+        versions: [
+          {
+            id: 'v1',
+            version: 1,
+            createdBy: '1',
+            createdDate: new Date('2024-01-15'),
+            changes: 'สร้างเอกสารเริ่มต้น'
+          },
+          {
+            id: 'v2',
+            version: 2,
+            createdBy: '2',
+            createdDate: new Date('2024-01-16'),
+            changes: 'เพิ่มข้อมูลการวิเคราะห์'
+          }
+        ]
+      },
+      {
+        id: 'doc2',
+        title: 'แผนการพัฒนา AI Tools',
+        type: 'microsoft_word',
+        url: 'https://office.com/document/example2',
+        createdBy: '1',
+        createdDate: new Date('2024-01-10'),
+        lastModified: new Date('2024-01-14'),
+        lastModifiedBy: '4',
+        accessLevel: 'comment',
+        linkedChannels: ['ai-research'],
+        aiGenerated: false,
+        status: 'review',
+        collaborators: [
+          { userId: '1', permission: 'edit', lastAccessed: new Date(Date.now() - 86400000) },
+          { userId: '4', permission: 'edit', lastAccessed: new Date(Date.now() - 3600000) }
+        ],
+        comments: [],
+        versions: []
+      },
+      {
+        id: 'doc3',
+        title: 'สรุปผลการทดสอบ AI Models',
+        type: 'internal_doc',
+        content: 'เนื้อหาเอกสารภายใน...',
+        createdBy: '2',
+        createdDate: new Date('2024-01-12'),
+        lastModified: new Date('2024-01-13'),
+        lastModifiedBy: '2',
+        accessLevel: 'view',
+        linkedChannels: ['documents'],
+        aiGenerated: true,
+        aiModel: 'Claude 3.5',
+        aiCost: 1.23,
+        status: 'draft',
+        collaborators: [
+          { userId: '2', permission: 'edit', lastAccessed: new Date() }
+        ],
+        comments: [],
+        versions: []
+      }
+    ],
+    settings: {
+      allowPersonalAPI: true,
+      autoShareAIResults: true,
+      requireApprovalForDocuments: false,
+      chatIntegration: {
+        platform: 'google_chat',
+        workspaceId: 'workspace123',
+        channelMappings: []
+      },
+      aiUsagePolicy: {
+        allowMembersToUseTeamAI: true,
+        maxQueriesPerMemberPerDay: 50,
+        requireApprovalForExpensiveQueries: true
+      }
     },
-    {
-      id: '2',
-      name: 'คุณปัทมา นักวิเคราะห์',
-      email: 'patma@company.com',
-      role: 'member',
-      status: 'online',
-      joinDate: new Date('2024-01-05'),
-      lastActive: new Date(Date.now() - 1800000),
-      hasOwnAPI: true,
-      apiQuotaRemaining: 150,
-      permissions: ['view_documents', 'comment', 'basic_search']
-    },
-    {
-      id: '3',
-      name: 'คุณอนุชา นักวิจัย',
-      email: 'anucha@university.ac.th',
-      role: 'member',
-      status: 'away',
-      joinDate: new Date('2024-01-10'),
-      lastActive: new Date(Date.now() - 3600000),
-      hasOwnAPI: false,
-      permissions: ['view_documents', 'comment']
-    },
-    {
-      id: '4',
-      name: 'คุณวิชัย เทคนิค',
-      email: 'wichai@company.com',
-      role: 'member',
-      status: 'busy',
-      joinDate: new Date('2024-01-15'),
-      lastActive: new Date(Date.now() - 7200000),
-      hasOwnAPI: true,
-      apiQuotaRemaining: 0,
-      permissions: ['view_documents', 'comment', 'basic_search']
+    usage: {
+      totalAIQueries: 146,
+      totalCost: 28.45,
+      documentsCreated: 31,
+      messagesPosted: 357
     }
-  ];
+  };
 
-  const mockSharedDocuments: SharedDocument[] = [
-    {
-      id: '1',
-      title: 'รายงานการวิจัย AI in Healthcare 2024',
-      type: 'research',
-      sharedBy: 'นาย A',
-      sharedDate: new Date('2024-01-15T10:30:00'),
-      lastModified: new Date('2024-01-15T14:20:00'),
-      summary: 'การวิจัยเกี่ยวกับการใช้ AI ในระบบสุขภาพ พบว่าสามารถเพิ่มประสิทธิภาพการวินิจฉัยได้ 35%',
-      tags: ['AI', 'Healthcare', 'Research', '2024'],
-      accessLevel: 'comment',
-      viewCount: 12,
-      commentCount: 5
-    },
-    {
-      id: '2',
-      title: 'สรุปข้อมูลตลาด AI ในประเทศไทย',
-      type: 'analysis',
-      sharedBy: 'นาย A',
-      sharedDate: new Date('2024-01-14T09:15:00'),
-      lastModified: new Date('2024-01-14T16:45:00'),
-      summary: 'การวิเคราะห์ตลาด AI ในไทย แนวโน้มการเติบโต และโอกาสทางธุรกิจ',
-      tags: ['Market', 'Thailand', 'AI', 'Business'],
-      accessLevel: 'view',
-      viewCount: 8,
-      commentCount: 3
-    },
-    {
-      id: '3',
-      title: 'แผนการพัฒนา AI Strategy Q2 2024',
-      type: 'report',
-      sharedBy: 'คุณปัทมา',
-      sharedDate: new Date('2024-01-13T11:00:00'),
-      lastModified: new Date('2024-01-13T15:30:00'),
-      summary: 'แผนกลยุทธ์การพัฒนา AI สำหรับไตรมาส 2 ปี 2024',
-      tags: ['Strategy', 'Q2', 'Planning', 'AI'],
-      accessLevel: 'edit',
-      viewCount: 15,
-      commentCount: 8
-    }
-  ];
-
-  const mockChannels: ChatChannel[] = [
-    { 
-      id: 'general', 
-      name: 'ทั่วไป', 
-      description: 'การสนทนาทั่วไปของทีม', 
-      type: 'general', 
-      memberCount: 4, 
-      unreadCount: 2,
-      lastMessage: {
-        user: 'นาย A',
-        content: 'ได้ข้อมูลใหม่เกี่ยวกับ AI in Healthcare แล้ว',
-        timestamp: new Date(Date.now() - 300000)
-      }
-    },
-    { 
-      id: 'research-project', 
-      name: 'โปรเจกต์วิจัย', 
-      description: 'หารือเกี่ยวกับโปรเจกต์วิจัยหลัก', 
-      type: 'project', 
-      linkedDocuments: ['1', '3'],
-      memberCount: 4, 
-      unreadCount: 0,
-      lastMessage: {
-        user: 'คุณอนุชา',
-        content: 'ผมอ่านรายงานแล้ว มีคำถามเพิ่มเติม',
-        timestamp: new Date(Date.now() - 1800000)
-      }
-    },
-    { 
-      id: 'market-analysis', 
-      name: 'วิเคราะห์ตลาด', 
-      description: 'พูดคุยเกี่ยวกับการวิเคราะห์ตลาด', 
-      type: 'document', 
-      linkedDocuments: ['2'],
-      memberCount: 3, 
-      unreadCount: 1,
-      lastMessage: {
-        user: 'คุณวิชัย',
-        content: 'ข้อมูลตลาดไทยน่าสนใจมาก',
-        timestamp: new Date(Date.now() - 3600000)
-      }
-    }
-  ];
+  const [team] = useState<Team>(mockTeam);
 
   const mockMessages: ChatMessage[] = [
     {
       id: '1',
-      userId: '1',
-      userName: 'นาย A',
-      content: 'ได้ข้อมูลการวิจัย AI in Healthcare มาแล้ว ได้แชร์เอกสารให้ทุกคนดูแล้ว',
-      timestamp: new Date(Date.now() - 1800000),
-      type: 'text'
+      channelId: 'general',
+      senderId: '1',
+      content: 'สวัสดีครับทุกคน วันนี้เราจะเริ่มโปรเจกต์วิจัย AI ใหม่',
+      timestamp: new Date(Date.now() - 3600000),
+      type: 'text',
+      reactions: [
+        { emoji: '👍', users: ['2', '3'] },
+        { emoji: '🎉', users: ['4'] }
+      ],
+      replies: [],
+      isEdited: false,
+      isPinned: true
     },
     {
       id: '2',
-      userId: '2',
-      userName: 'คุณปัทมา',
-      content: 'ขอบคุณค่ะ กำลังอ่านอยู่ ข้อมูลน่าสนใจมาก',
-      timestamp: new Date(Date.now() - 1500000),
+      channelId: 'general',
+      senderId: '2',
+      content: 'ผมได้ทำการค้นหาข้อมูลเบื้องต้นแล้ว ผลลัพธ์น่าสนใจมาก',
+      timestamp: new Date(Date.now() - 1800000),
       type: 'text',
-      reactions: [{ emoji: '👍', users: ['1', '3'] }]
+      reactions: [],
+      replies: [],
+      isEdited: false,
+      isPinned: false
     },
     {
       id: '3',
-      userId: '3',
-      userName: 'คุณอนุชา',
-      content: 'ผมมีคำถามเกี่ยวกับส่วนการวิเคราะห์ข้อมูล สามารถขอข้อมูลเพิ่มเติมได้ไหมครับ?',
-      timestamp: new Date(Date.now() - 900000),
-      type: 'text'
-    },
-    {
-      id: '4',
-      userId: '1',
-      userName: 'นาย A',
-      content: 'ได้เลยครับ ผมจะหาข้อมูลเพิ่มเติมให้',
-      timestamp: new Date(Date.now() - 600000),
-      type: 'text'
-    }
-  ];
-
-  const mockInvitations: TeamInvitation[] = [
-    {
-      id: '1',
-      email: 'newresearcher@university.ac.th',
-      role: 'member',
-      invitedBy: 'นาย A',
-      invitedDate: new Date(Date.now() - 86400000),
-      status: 'pending',
-      expiryDate: new Date(Date.now() + 6 * 86400000),
-      message: 'เชิญเข้าร่วมทีมวิจัย AI'
+      channelId: 'general',
+      senderId: '1',
+      content: 'ผลการวิเคราะห์ออกมาแล้วครับ ดูในเอกสาร "รายงานการวิจัย AI Q1"',
+      timestamp: new Date(Date.now() - 300000),
+      type: 'document_share',
+      attachments: [
+        {
+          type: 'document',
+          name: 'รายงานการวิจัย AI Q1 2024',
+          url: 'doc1'
+        }
+      ],
+      reactions: [
+        { emoji: '📄', users: ['2', '3', '4'] }
+      ],
+      replies: [],
+      isEdited: false,
+      isPinned: false
     }
   ];
 
   useEffect(() => {
-    setMembers(mockMembers);
-    setSharedDocuments(mockSharedDocuments);
-    setChatChannels(mockChannels);
-    setMessages(mockMessages);
-    setInvitations(mockInvitations);
-  }, []);
+    setChatMessages(mockMessages.filter(msg => msg.channelId === selectedChannel));
+  }, [selectedChannel]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -356,15 +574,16 @@ const Teams: React.FC = () => {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'leader': return <Crown className="h-4 w-4 text-yellow-600" />;
-      case 'member': return <User className="h-4 w-4 text-blue-600" />;
-      default: return <User className="h-4 w-4 text-gray-600" />;
+      case 'team_leader': return <Crown className="h-4 w-4 text-yellow-500" />;
+      case 'co_leader': return <Shield className="h-4 w-4 text-blue-500" />;
+      default: return <User className="h-4 w-4 text-gray-500" />;
     }
   };
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'leader': return 'หัวหน้าทีม';
+      case 'team_leader': return 'หัวหน้าทีม';
+      case 'co_leader': return 'รองหัวหน้าทีม';
       case 'member': return 'สมาชิก';
       default: return 'ไม่ทราบ';
     }
@@ -372,86 +591,82 @@ const Teams: React.FC = () => {
 
   const getDocumentTypeIcon = (type: string) => {
     switch (type) {
-      case 'research': return <BookOpen className="h-4 w-4 text-blue-600" />;
-      case 'report': return <BarChart3 className="h-4 w-4 text-green-600" />;
-      case 'analysis': return <TrendingUp className="h-4 w-4 text-purple-600" />;
-      case 'summary': return <FileText className="h-4 w-4 text-orange-600" />;
-      default: return <FileText className="h-4 w-4 text-gray-600" />;
+      case 'google_doc': return <FileText className="h-4 w-4 text-blue-600" />;
+      case 'microsoft_word': return <FileText className="h-4 w-4 text-blue-800" />;
+      case 'internal_doc': return <FileText className="h-4 w-4 text-gray-600" />;
+      default: return <FileText className="h-4 w-4 text-gray-500" />;
     }
   };
 
-  const getDocumentTypeLabel = (type: string) => {
-    switch (type) {
-      case 'research': return 'งานวิจัย';
-      case 'report': return 'รายงาน';
-      case 'analysis': return 'การวิเคราะห์';
-      case 'summary': return 'สรุป';
-      default: return 'เอกสาร';
+  const getDocumentStatusColor = (status: string) => {
+    switch (status) {
+      case 'draft': return 'bg-gray-100 text-gray-800';
+      case 'review': return 'bg-yellow-100 text-yellow-800';
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'archived': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const onlineMembers = members.filter(member => member.status === 'online');
-  const leaderMember = members.find(member => member.role === 'leader');
+  const getDocumentStatusLabel = (status: string) => {
+    switch (status) {
+      case 'draft': return 'ร่าง';
+      case 'review': return 'รอตรวจสอบ';
+      case 'approved': return 'อนุมัติแล้ว';
+      case 'archived': return 'เก็บถาวร';
+      default: return 'ไม่ทราบ';
+    }
+  };
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
 
     const message: ChatMessage = {
       id: Date.now().toString(),
-      userId: '1', // Current user
-      userName: 'คุณ',
+      channelId: selectedChannel,
+      senderId: '1', // Current user
       content: newMessage,
       timestamp: new Date(),
-      type: 'text'
+      type: 'text',
+      reactions: [],
+      replies: [],
+      isEdited: false,
+      isPinned: false
     };
 
-    setMessages(prev => [...prev, message]);
+    setChatMessages(prev => [...prev, message]);
     setNewMessage('');
   };
 
-  const handleInviteMember = () => {
-    if (!newInviteEmail.trim()) return;
-
-    const invitation: TeamInvitation = {
-      id: Date.now().toString(),
-      email: newInviteEmail,
-      role: 'member',
-      invitedBy: 'คุณ',
-      invitedDate: new Date(),
-      status: 'pending',
-      expiryDate: new Date(Date.now() + 7 * 86400000),
-      message: newInviteMessage
-    };
-
-    setInvitations(prev => [...prev, invitation]);
-    setNewInviteEmail('');
-    setNewInviteMessage('');
-    setShowInviteModal(false);
-  };
-
-  const getTabBadge = (tab: string) => {
-    switch (tab) {
-      case 'invitations':
-        const pendingInvites = invitations.filter(inv => inv.status === 'pending').length;
-        return pendingInvites > 0 ? pendingInvites : null;
-      default:
-        return null;
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
+  const onlineMembers = team.members.filter(member => member.status === 'online');
+  const selectedChannelData = team.channels.find(ch => ch.id === selectedChannel);
+
   return (
-    <div className="h-full flex flex-col bg-gray-50 overflow-hidden">
+    <div className="h-full flex flex-col bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center">
               <Users className="h-7 w-7 mr-3 text-blue-600" />
-              ทีมงานและพื้นที่ทำงานร่วมกัน
+              {team.name}
             </h1>
-            <p className="text-gray-600 text-sm mt-1">จัดการทีม แชร์เอกสาร และสื่อสารผ่าน Google Chat/Microsoft Teams</p>
+            <p className="text-gray-600 text-sm mt-1">{team.description}</p>
           </div>
           <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm font-medium text-green-800">
+                {onlineMembers.length} คนออนไลน์
+              </span>
+            </div>
             <button
               onClick={() => setShowInviteModal(true)}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -465,19 +680,17 @@ const Teams: React.FC = () => {
         {/* Tabs */}
         <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
           {[
-            { id: 'workspace', label: 'พื้นที่ทำงาน', icon: Activity },
-            { id: 'documents', label: 'เอกสารแชร์', icon: FileText },
+            { id: 'workspace', label: 'พื้นที่ทำงาน', icon: MessageSquare },
+            { id: 'documents', label: 'เอกสารร่วม', icon: FileText },
             { id: 'members', label: 'สมาชิก', icon: Users },
-            { id: 'invitations', label: 'คำเชิญ', icon: UserPlus },
             { id: 'settings', label: 'ตั้งค่า', icon: Settings }
           ].map((tab) => {
             const Icon = tab.icon;
-            const badge = getTabBadge(tab.id);
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors relative ${
+                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeTab === tab.id
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
@@ -485,11 +698,6 @@ const Teams: React.FC = () => {
               >
                 <Icon className="h-4 w-4 mr-2" />
                 {tab.label}
-                {badge && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {badge}
-                  </span>
-                )}
               </button>
             );
           })}
@@ -497,15 +705,15 @@ const Teams: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-hidden">
         {activeTab === 'workspace' && (
           <div className="h-full flex">
-            {/* Chat Channels Sidebar */}
+            {/* Channels Sidebar */}
             <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
               <div className="p-4 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-3">ช่องสนทนา</h3>
+                <h3 className="text-sm font-medium text-gray-900 mb-3">ช่องสนทนา</h3>
                 <div className="space-y-1">
-                  {chatChannels.map((channel) => (
+                  {team.channels.map((channel) => (
                     <button
                       key={channel.id}
                       onClick={() => setSelectedChannel(channel.id)}
@@ -520,7 +728,7 @@ const Teams: React.FC = () => {
                         <span className="text-sm font-medium">{channel.name}</span>
                       </div>
                       {channel.unreadCount > 0 && (
-                        <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
                           {channel.unreadCount}
                         </span>
                       )}
@@ -530,38 +738,27 @@ const Teams: React.FC = () => {
               </div>
 
               {/* Online Members */}
-              <div className="flex-1 p-4">
-                <h4 className="text-sm font-medium text-gray-500 mb-3">สมาชิกออนไลน์ ({onlineMembers.length})</h4>
+              <div className="p-4">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">สมาชิกออนไลน์</h3>
                 <div className="space-y-2">
                   {onlineMembers.map((member) => (
                     <div key={member.id} className="flex items-center space-x-2">
                       <div className="relative">
-                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                          <User className="h-3 w-3 text-white" />
+                        <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                          <User className="h-4 w-4 text-gray-600" />
                         </div>
-                        <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 ${getStatusColor(member.status)} rounded-full border border-white`} />
+                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(member.status)} rounded-full border-2 border-white`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-700 truncate">{member.name}</p>
-                        {member.role === 'leader' && (
-                          <p className="text-xs text-yellow-600">หัวหน้าทีม</p>
-                        )}
+                        <p className="text-sm font-medium text-gray-900 truncate">{member.name}</p>
+                        <p className="text-xs text-gray-500">{getRoleLabel(member.role)}</p>
                       </div>
+                      {member.role === 'team_leader' && (
+                        <Crown className="h-4 w-4 text-yellow-500" />
+                      )}
                     </div>
                   ))}
                 </div>
-
-                {/* Team Leader Info */}
-                {leaderMember && (
-                  <div className="mt-6 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Crown className="h-4 w-4 text-yellow-600" />
-                      <span className="text-sm font-medium text-yellow-800">หัวหน้าทีม</span>
-                    </div>
-                    <p className="text-xs text-yellow-700">{leaderMember.name}</p>
-                    <p className="text-xs text-yellow-600 mt-1">รับผิดชอบค่าใช้จ่ายและการค้นหาขั้นสูง</p>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -571,44 +768,45 @@ const Teams: React.FC = () => {
               <div className="bg-white border-b border-gray-200 px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <Hash className="h-5 w-5 text-gray-600" />
+                    <Hash className="h-5 w-5 text-gray-500" />
                     <div>
-                      <h3 className="font-semibold text-gray-900">
-                        {chatChannels.find(c => c.id === selectedChannel)?.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {chatChannels.find(c => c.id === selectedChannel)?.description}
-                      </p>
+                      <h2 className="text-lg font-semibold text-gray-900">{selectedChannelData?.name}</h2>
+                      <p className="text-sm text-gray-600">{selectedChannelData?.description}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-                      <Phone className="h-4 w-4" />
+                      <Phone className="h-5 w-5" />
                     </button>
                     <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-                      <Video className="h-4 w-4" />
+                      <Video className="h-5 w-5" />
                     </button>
                     <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
 
                 {/* Linked Documents */}
-                {chatChannels.find(c => c.id === selectedChannel)?.linkedDocuments && (
-                  <div className="mt-3 flex items-center space-x-2">
-                    <FileText className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm text-gray-600">เอกสารที่เกี่ยวข้อง:</span>
-                    <div className="flex space-x-2">
-                      {chatChannels.find(c => c.id === selectedChannel)?.linkedDocuments?.map((docId) => {
-                        const doc = sharedDocuments.find(d => d.id === docId);
+                {selectedChannelData?.linkedDocuments && selectedChannelData.linkedDocuments.length > 0 && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <FileText className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-900">เอกสารที่เชื่อมโยง</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedChannelData.linkedDocuments.map((docId) => {
+                        const doc = team.sharedDocuments.find(d => d.id === docId);
                         return doc ? (
                           <button
                             key={docId}
-                            onClick={() => setSelectedDocument(doc)}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full hover:bg-blue-200 transition-colors"
+                            onClick={() => {
+                              setSelectedDocument(doc);
+                              setShowDocumentModal(true);
+                            }}
+                            className="text-xs bg-white text-blue-700 px-2 py-1 rounded-full hover:bg-blue-100 transition-colors"
                           >
-                            {doc.title.substring(0, 20)}...
+                            {doc.title}
                           </button>
                         ) : null;
                       })}
@@ -619,62 +817,103 @@ const Teams: React.FC = () => {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {messages.map((message) => (
-                  <div key={message.id} className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <User className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-medium text-gray-900">{message.userName}</span>
-                        <span className="text-xs text-gray-500">
-                          {message.timestamp.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                      <p className="text-gray-700">{message.content}</p>
-                      {message.reactions && (
-                        <div className="flex items-center space-x-2 mt-2">
-                          {message.reactions.map((reaction, index) => (
-                            <button
-                              key={index}
-                              className="flex items-center space-x-1 px-2 py-1 bg-gray-100 rounded-full text-xs hover:bg-gray-200"
-                            >
-                              <span>{reaction.emoji}</span>
-                              <span>{reaction.users.length}</span>
-                            </button>
-                          ))}
+                {chatMessages.map((message) => {
+                  const sender = team.members.find(m => m.id === message.senderId);
+                  return (
+                    <div key={message.id} className="flex items-start space-x-3">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                          <User className="h-5 w-5 text-gray-600" />
                         </div>
-                      )}
+                        {sender && (
+                          <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(sender.status)} rounded-full border-2 border-white`} />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="text-sm font-medium text-gray-900">{sender?.name}</span>
+                          {sender?.role === 'team_leader' && (
+                            <Crown className="h-3 w-3 text-yellow-500" />
+                          )}
+                          <span className="text-xs text-gray-500">
+                            {message.timestamp.toLocaleTimeString('th-TH', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </span>
+                          {message.isPinned && (
+                            <Flag className="h-3 w-3 text-red-500" />
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-700 mb-2">{message.content}</div>
+                        
+                        {/* Attachments */}
+                        {message.attachments && message.attachments.length > 0 && (
+                          <div className="space-y-2 mb-2">
+                            {message.attachments.map((attachment, index) => (
+                              <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg border">
+                                {getDocumentTypeIcon(attachment.type)}
+                                <span className="text-sm text-gray-700">{attachment.name}</span>
+                                <button className="text-blue-600 hover:text-blue-700 text-sm">
+                                  เปิด
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Reactions */}
+                        {message.reactions.length > 0 && (
+                          <div className="flex items-center space-x-1 mb-2">
+                            {message.reactions.map((reaction, index) => (
+                              <button
+                                key={index}
+                                className="flex items-center space-x-1 px-2 py-1 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                              >
+                                <span className="text-sm">{reaction.emoji}</span>
+                                <span className="text-xs text-gray-600">{reaction.users.length}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Message Input */}
               <div className="bg-white border-t border-gray-200 p-4">
-                <div className="flex items-center space-x-3">
-                  <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-                    <Paperclip className="h-4 w-4" />
-                  </button>
+                <div className="flex items-end space-x-3">
+                  <div className="flex space-x-2">
+                    <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                      <Paperclip className="h-5 w-5" />
+                    </button>
+                    <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                      <Image className="h-5 w-5" />
+                    </button>
+                    <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                      <Mic className="h-5 w-5" />
+                    </button>
+                  </div>
+                  
                   <div className="flex-1 relative">
-                    <input
-                      type="text"
+                    <textarea
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      placeholder={`ส่งข้อความไปยัง #${chatChannels.find(c => c.id === selectedChannel)?.name}`}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onKeyPress={handleKeyPress}
+                      placeholder={`ส่งข้อความไปยัง #${selectedChannelData?.name}`}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      rows={1}
                     />
                   </div>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-                    <Smile className="h-4 w-4" />
-                  </button>
+                  
                   <button
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim()}
-                    className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="h-5 w-5" />
                   </button>
                 </div>
               </div>
@@ -683,277 +922,308 @@ const Teams: React.FC = () => {
         )}
 
         {activeTab === 'documents' && (
-          <div className="p-6">
-            {/* Search */}
-            <div className="mb-6">
-              <div className="relative">
-                <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="ค้นหาเอกสารที่แชร์..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+          <div className="h-full overflow-y-auto p-6">
+            <div className="max-w-6xl mx-auto">
+              {/* Documents Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">เอกสารร่วม</h2>
+                  <p className="text-gray-600 text-sm mt-1">เอกสารที่แชร์ภายในทีมและเชื่อมโยงกับช่องสนทนา</p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="relative">
+                    <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="ค้นหาเอกสาร..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setShowCreateDocModal(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    สร้างเอกสาร
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Shared Documents */}
-            <div className="space-y-4">
-              {sharedDocuments.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => setSelectedDocument(doc)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4 flex-1">
-                      <div className="flex-shrink-0">
-                        {getDocumentTypeIcon(doc.type)}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="text-lg font-medium text-gray-900 truncate">{doc.title}</h3>
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                            {getDocumentTypeLabel(doc.type)}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
-                          <span className="flex items-center">
-                            <User className="h-4 w-4 mr-1" />
-                            แชร์โดย {doc.sharedBy}
-                          </span>
-                          <span className="flex items-center">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {doc.sharedDate.toLocaleDateString('th-TH')}
-                          </span>
-                          <span className="flex items-center">
-                            <Eye className="h-4 w-4 mr-1" />
-                            {doc.viewCount} ครั้ง
-                          </span>
-                          <span className="flex items-center">
-                            <MessageSquare className="h-4 w-4 mr-1" />
-                            {doc.commentCount} ความคิดเห็น
-                          </span>
-                        </div>
-
-                        <p className="text-sm text-gray-700 mb-3 line-clamp-2">{doc.summary}</p>
-
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {doc.tags.map((tag, index) => (
-                            <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-
-                        <div className="flex items-center space-x-4">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            doc.accessLevel === 'edit' ? 'bg-green-100 text-green-800' :
-                            doc.accessLevel === 'comment' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {doc.accessLevel === 'edit' ? 'แก้ไขได้' :
-                             doc.accessLevel === 'comment' ? 'แสดงความคิดเห็นได้' : 'ดูได้อย่างเดียว'}
-                          </span>
-                        </div>
-                      </div>
+              {/* Document Integration Options */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="bg-blue-500 p-2 rounded-lg">
+                      <FileText className="h-5 w-5 text-white" />
                     </div>
-
-                    <div className="flex items-center space-x-2">
-                      <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-                        <Share2 className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-                        <Download className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </button>
+                    <div>
+                      <h3 className="font-medium text-blue-900">Google Docs</h3>
+                      <p className="text-sm text-blue-700">แก้ไขร่วมกันแบบ Real-time</p>
                     </div>
                   </div>
+                  <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                    เชื่อมต่อ Google Docs
+                  </button>
                 </div>
-              ))}
+
+                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="bg-indigo-500 p-2 rounded-lg">
+                      <FileText className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-indigo-900">Microsoft Word</h3>
+                      <p className="text-sm text-indigo-700">ใช้งาน Office 365</p>
+                    </div>
+                  </div>
+                  <button className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm">
+                    เชื่อมต่อ Office 365
+                  </button>
+                </div>
+
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="bg-gray-500 p-2 rounded-lg">
+                      <FileText className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900">เอกสารภายใน</h3>
+                      <p className="text-sm text-gray-700">สร้างและแก้ไขในระบบ</p>
+                    </div>
+                  </div>
+                  <button className="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                    สร้างเอกสารใหม่
+                  </button>
+                </div>
+              </div>
+
+              {/* Documents List */}
+              <div className="space-y-4">
+                {team.sharedDocuments
+                  .filter(doc => 
+                    searchQuery === '' || 
+                    doc.title.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map((doc) => {
+                    const creator = team.members.find(m => m.id === doc.createdBy);
+                    const lastEditor = team.members.find(m => m.id === doc.lastModifiedBy);
+                    
+                    return (
+                      <div key={doc.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-4 flex-1">
+                            <div className="flex-shrink-0">
+                              {getDocumentTypeIcon(doc.type)}
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <h3 className="text-lg font-medium text-gray-900 truncate">{doc.title}</h3>
+                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getDocumentStatusColor(doc.status)}`}>
+                                  {getDocumentStatusLabel(doc.status)}
+                                </span>
+                                {doc.aiGenerated && (
+                                  <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
+                                    <Brain className="h-3 w-3" />
+                                    <span>AI Generated</span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
+                                <span className="flex items-center">
+                                  <User className="h-4 w-4 mr-1" />
+                                  สร้างโดย {creator?.name}
+                                </span>
+                                <span className="flex items-center">
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  {doc.lastModified.toLocaleDateString('th-TH')}
+                                </span>
+                                <span className="flex items-center">
+                                  <Users className="h-4 w-4 mr-1" />
+                                  {doc.collaborators.length} คนร่วมงาน
+                                </span>
+                                {doc.comments.length > 0 && (
+                                  <span className="flex items-center">
+                                    <MessageCircle className="h-4 w-4 mr-1" />
+                                    {doc.comments.length} ความคิดเห็น
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Linked Channels */}
+                              {doc.linkedChannels.length > 0 && (
+                                <div className="flex items-center space-x-2 mb-3">
+                                  <span className="text-sm text-gray-600">เชื่อมโยงกับ:</span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {doc.linkedChannels.map((channelId) => {
+                                      const channel = team.channels.find(ch => ch.id === channelId);
+                                      return channel ? (
+                                        <span key={channelId} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                          #{channel.name}
+                                        </span>
+                                      ) : null;
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* AI Info */}
+                              {doc.aiGenerated && doc.aiModel && (
+                                <div className="flex items-center space-x-4 text-xs text-gray-500">
+                                  <span className="flex items-center">
+                                    <Brain className="h-3 w-3 mr-1" />
+                                    {doc.aiModel}
+                                  </span>
+                                  {doc.aiCost && (
+                                    <span>ค่าใช้จ่าย: ฿{doc.aiCost.toFixed(2)}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => {
+                                setSelectedDocument(doc);
+                                setShowDocumentModal(true);
+                              }}
+                              className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            {doc.url && (
+                              <button
+                                onClick={() => window.open(doc.url, '_blank')}
+                                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </button>
+                            )}
+                            <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                              <Share2 className="h-4 w-4" />
+                            </button>
+                            <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           </div>
         )}
 
         {activeTab === 'members' && (
-          <div className="p-6">
-            {/* Team Leader Section */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">หัวหน้าทีม</h3>
-              {leaderMember && (
-                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200 p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="relative">
-                      <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center">
-                        <Crown className="h-8 w-8 text-white" />
-                      </div>
-                      <div className={`absolute -bottom-1 -right-1 w-5 h-5 ${getStatusColor(leaderMember.status)} rounded-full border-2 border-white`} />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-xl font-semibold text-gray-900">{leaderMember.name}</h4>
-                      <p className="text-gray-600">{leaderMember.email}</p>
-                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
-                        <span className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          เข้าร่วม {leaderMember.joinDate.toLocaleDateString('th-TH')}
-                        </span>
-                        <span className="flex items-center">
-                          <Activity className="h-4 w-4 mr-1" />
-                          {getStatusLabel(leaderMember.status)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium mb-2">
-                        หัวหน้าทีม
-                      </div>
-                      <p className="text-xs text-gray-600">รับผิดชอบค่าใช้จ่าย</p>
-                      <p className="text-xs text-gray-600">การค้นหาขั้นสูง</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Team Members */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">สมาชิกทีม</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {members.filter(member => member.role !== 'leader').map((member) => (
-                  <div key={member.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div className="h-full overflow-y-auto p-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {team.members.map((member) => (
+                  <div key={member.id} className="bg-white rounded-xl border border-gray-200 p-6">
                     <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-4">
                         <div className="relative">
-                          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                            <User className="h-6 w-6 text-white" />
+                          <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
+                            <User className="h-6 w-6 text-gray-600" />
                           </div>
                           <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(member.status)} rounded-full border-2 border-white`} />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-900">{member.name}</h4>
+                          <div className="flex items-center space-x-2">
+                            <h3 className="text-lg font-medium text-gray-900">{member.name}</h3>
+                            {getRoleIcon(member.role)}
+                          </div>
                           <p className="text-sm text-gray-600">{member.email}</p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              member.status === 'online' ? 'bg-green-100 text-green-800' :
+                              member.status === 'away' ? 'bg-yellow-100 text-yellow-800' :
+                              member.status === 'busy' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {getStatusLabel(member.status)}
+                            </span>
+                            <span className="text-xs text-gray-500">{getRoleLabel(member.role)}</span>
+                          </div>
                         </div>
                       </div>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 rounded-lg">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </button>
                     </div>
 
+                    {/* Member Stats */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-blue-50 rounded-lg p-3">
+                        <div className="flex items-center space-x-2">
+                          <FileText className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-900">เอกสาร</span>
+                        </div>
+                        <p className="text-lg font-bold text-blue-600">
+                          {member.contributionStats.documentsCreated}
+                        </p>
+                        <p className="text-xs text-blue-700">สร้าง / {member.contributionStats.documentsEdited} แก้ไข</p>
+                      </div>
+                      <div className="bg-green-50 rounded-lg p-3">
+                        <div className="flex items-center space-x-2">
+                          <MessageSquare className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-900">ข้อความ</span>
+                        </div>
+                        <p className="text-lg font-bold text-green-600">
+                          {member.contributionStats.messagesPosted}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* API Status */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">สถานะ:</span>
-                        <div className="flex items-center space-x-2">
-                          <div className={`w-2 h-2 ${getStatusColor(member.status)} rounded-full`} />
-                          <span className="text-sm font-medium text-gray-900">{getStatusLabel(member.status)}</span>
-                        </div>
+                        <span className="text-sm font-medium text-gray-700">API ส่วนตัว:</span>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          member.hasPersonalAPI ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {member.hasPersonalAPI ? 'มี' : 'ไม่มี'}
+                        </span>
                       </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">API ส่วนตัว:</span>
-                        <div className="flex items-center space-x-1">
-                          {member.hasOwnAPI ? (
-                            <>
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                              <span className="text-sm text-green-600">มี</span>
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-4 w-4 text-red-500" />
-                              <span className="text-sm text-red-600">ไม่มี</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {member.hasOwnAPI && member.apiQuotaRemaining !== undefined && (
+                      
+                      {member.hasPersonalAPI && member.role !== 'team_leader' && (
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">โควต้าคงเหลือ:</span>
+                          <span className="text-sm font-medium text-gray-700">โควต้าคงเหลือ:</span>
                           <span className={`text-sm font-medium ${
-                            member.apiQuotaRemaining > 50 ? 'text-green-600' :
-                            member.apiQuotaRemaining > 0 ? 'text-yellow-600' : 'text-red-600'
+                            member.personalQuotaRemaining > 20 ? 'text-green-600' :
+                            member.personalQuotaRemaining > 5 ? 'text-yellow-600' : 'text-red-600'
                           }`}>
-                            {member.apiQuotaRemaining} คำขอ
+                            {member.personalQuotaRemaining} คำขอ
+                          </span>
+                        </div>
+                      )}
+
+                      {member.role === 'team_leader' && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">สิทธิพิเศษ:</span>
+                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                            ไม่จำกัดโควต้า
                           </span>
                         </div>
                       )}
 
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">เข้าร่วมเมื่อ:</span>
-                        <span className="text-sm text-gray-900">{member.joinDate.toLocaleDateString('th-TH')}</span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">ใช้งานล่าสุด:</span>
-                        <span className="text-sm text-gray-900">
-                          {member.lastActive.toLocaleDateString('th-TH')}
+                        <span className="text-sm font-medium text-gray-700">AI ที่ใช้:</span>
+                        <span className="text-sm text-gray-600">
+                          {member.contributionStats.aiQueriesUsed} คำขอ
                         </span>
                       </div>
-
-                      {/* Permissions */}
-                      <div className="pt-3 border-t border-gray-200">
-                        <p className="text-sm text-gray-600 mb-2">สิทธิ์การใช้งาน:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {member.permissions.map((permission, index) => (
-                            <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                              {permission === 'view_documents' ? 'ดูเอกสาร' :
-                               permission === 'comment' ? 'แสดงความคิดเห็น' :
-                               permission === 'basic_search' ? 'ค้นหาพื้นฐาน' : permission}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
-        {activeTab === 'invitations' && (
-          <div className="p-6">
-            <div className="bg-white rounded-xl border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">คำเชิญสมาชิก</h3>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {invitations.map((invitation) => (
-                  <div key={invitation.id} className="p-6 flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                        <Mail className="h-5 w-5 text-gray-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{invitation.email}</p>
-                        <p className="text-sm text-gray-600">
-                          เชิญโดย {invitation.invitedBy} • {getRoleLabel(invitation.role)}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {invitation.invitedDate.toLocaleDateString('th-TH')}
-                        </p>
-                        {invitation.message && (
-                          <p className="text-xs text-gray-600 mt-1">"{invitation.message}"</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        invitation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        invitation.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                        invitation.status === 'declined' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {invitation.status === 'pending' ? 'รอการตอบรับ' :
-                         invitation.status === 'accepted' ? 'ยอมรับแล้ว' :
-                         invitation.status === 'declined' ? 'ปฏิเสธ' : 'หมดอายุ'}
-                      </span>
-                      {invitation.status === 'pending' && (
-                        <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                    {/* Member Actions */}
+                    <div className="flex items-center space-x-2 mt-4 pt-4 border-t border-gray-200">
+                      <button className="flex-1 bg-blue-100 text-blue-700 py-2 rounded-lg hover:bg-blue-200 transition-colors text-sm">
+                        ส่งข้อความ
+                      </button>
+                      {member.role !== 'team_leader' && (
+                        <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
                           <MoreHorizontal className="h-4 w-4" />
                         </button>
                       )}
@@ -966,27 +1236,30 @@ const Teams: React.FC = () => {
         )}
 
         {activeTab === 'settings' && (
-          <div className="p-6">
-            <div className="max-w-2xl space-y-6">
+          <div className="h-full overflow-y-auto p-6">
+            <div className="max-w-4xl mx-auto space-y-8">
               {/* Team Settings */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">การตั้งค่าทีม</h3>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">ชื่อทีม</label>
-                    <input
-                      type="text"
-                      defaultValue="ทีมงานและพื้นที่ทำงานร่วมกัน"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">อนุญาตให้สมาชิกใช้ API ส่วนตัว</span>
+                      <p className="text-xs text-gray-500">สมาชิกสามารถใช้ API Key ของตัวเองได้</p>
+                    </div>
+                    <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-colors">
+                      <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6" />
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย</label>
-                    <textarea
-                      rows={3}
-                      defaultValue="ทีมสำหรับการทำงานร่วมกันและแชร์ข้อมูลการวิจัย"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">แชร์ผลลัพธ์ AI อัตโนมัติ</span>
+                      <p className="text-xs text-gray-500">ผลลัพธ์จาก AI จะถูกแชร์ให้ทีมโดยอัตโนมัติ</p>
+                    </div>
+                    <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-colors">
+                      <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -995,60 +1268,87 @@ const Teams: React.FC = () => {
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">การเชื่อมต่อแชท</h3>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <MessageSquare className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">Google Chat</p>
-                        <p className="text-sm text-gray-600">เชื่อมต่อกับ Google Chat Spaces</p>
-                      </div>
-                    </div>
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                      เชื่อมต่อ
-                    </button>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">แพลตฟอร์มแชท</label>
+                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <option value="google_chat">Google Chat</option>
+                      <option value="microsoft_teams">Microsoft Teams</option>
+                      <option value="both">ทั้งคู่</option>
+                      <option value="internal">ระบบภายในเท่านั้น</option>
+                    </select>
                   </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Workspace ID</label>
+                    <input
+                      type="text"
+                      placeholder="ระบุ Workspace ID"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    เชื่อมต่อ
+                  </button>
+                </div>
+              </div>
 
-                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <Building className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">Microsoft Teams</p>
-                        <p className="text-sm text-gray-600">เชื่อมต่อกับ Microsoft Teams</p>
-                      </div>
+              {/* AI Usage Policy */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">นโยบายการใช้ AI</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">จำนวนคำขอสูงสุดต่อวัน (ต่อคน)</label>
+                    <input
+                      type="number"
+                      defaultValue={50}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">ต้องอนุมัติสำหรับคำขอที่มีค่าใช้จ่ายสูง</span>
+                      <p className="text-xs text-gray-500">คำขอที่มีค่าใช้จ่ายเกิน ฿1 ต้องได้รับอนุมัติ</p>
                     </div>
-                    <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
-                      เชื่อมต่อ
+                    <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600 transition-colors">
+                      <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6" />
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Team Permissions */}
+              {/* Team Usage Summary */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">สิทธิ์ของทีม</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">สมาชิกสามารถเชิญคนอื่นได้</p>
-                      <p className="text-sm text-gray-600">อนุญาตให้สมาชิกเชิญคนอื่นเข้าทีม</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">สรุปการใช้งานทีม</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-2">
+                      <Brain className="h-5 w-5 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-900">AI Queries</span>
                     </div>
-                    <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300">
-                      <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
-                    </button>
+                    <p className="text-2xl font-bold text-blue-600">{team.usage.totalAIQueries}</p>
                   </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">แชร์เอกสารอัตโนมัติ</p>
-                      <p className="text-sm text-gray-600">เอกสารใหม่จะถูกแชร์ให้ทีมโดยอัตโนมัติ</p>
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-2">
+                      <FileText className="h-5 w-5 text-green-600" />
+                      <span className="text-sm font-medium text-green-900">เอกสาร</span>
                     </div>
-                    <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600">
-                      <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-6" />
-                    </button>
+                    <p className="text-2xl font-bold text-green-600">{team.usage.documentsCreated}</p>
+                  </div>
+                  <div className="bg-purple-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-2">
+                      <MessageSquare className="h-5 w-5 text-purple-600" />
+                      <span className="text-sm font-medium text-purple-900">ข้อความ</span>
+                    </div>
+                    <p className="text-2xl font-bold text-purple-600">{team.usage.messagesPosted}</p>
+                  </div>
+                  <div className="bg-orange-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-2">
+                      <Users className="h-5 w-5 text-orange-600" />
+                      <span className="text-sm font-medium text-orange-900">สมาชิก</span>
+                    </div>
+                    <p className="text-2xl font-bold text-orange-600">{team.members.length}</p>
                   </div>
                 </div>
               </div>
@@ -1057,84 +1357,23 @@ const Teams: React.FC = () => {
         )}
       </div>
 
-      {/* Invite Modal */}
-      {showInviteModal && (
+      {/* Document Modal */}
+      {showDocumentModal && selectedDocument && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">เชิญสมาชิกใหม่</h3>
-              <button
-                onClick={() => setShowInviteModal(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">อีเมล</label>
-                <input
-                  type="email"
-                  value={newInviteEmail}
-                  onChange={(e) => setNewInviteEmail(e.target.value)}
-                  placeholder="example@company.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">ข้อความเชิญ (ไม่บังคับ)</label>
-                <textarea
-                  value={newInviteMessage}
-                  onChange={(e) => setNewInviteMessage(e.target.value)}
-                  placeholder="เชิญเข้าร่วมทีมเพื่อทำงานร่วมกัน..."
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              
-              <div className="bg-blue-50 rounded-lg p-3">
-                <p className="text-sm text-blue-800">
-                  <Info className="h-4 w-4 inline mr-1" />
-                  สมาชิกใหม่จะได้รับสิทธิ์ในการดูเอกสารและแสดงความคิดเห็น
-                </p>
-              </div>
-              
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  onClick={() => setShowInviteModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  onClick={handleInviteMember}
-                  disabled={!newInviteEmail.trim()}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  ส่งคำเชิญ
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Document Detail Modal */}
-      {selectedDocument && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-full max-w-2xl h-4/5 flex flex-col">
+          <div className="bg-white rounded-xl w-full max-w-4xl h-5/6 flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 {getDocumentTypeIcon(selectedDocument.type)}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{selectedDocument.title}</h3>
-                  <p className="text-sm text-gray-600">แชร์โดย {selectedDocument.sharedBy}</p>
+                  <h3 className="text-xl font-semibold text-gray-900">{selectedDocument.title}</h3>
+                  <p className="text-sm text-gray-600">
+                    สร้างโดย {team.members.find(m => m.id === selectedDocument.createdBy)?.name} • 
+                    {selectedDocument.createdDate.toLocaleDateString('th-TH')}
+                  </p>
                 </div>
               </div>
               <button
-                onClick={() => setSelectedDocument(null)}
+                onClick={() => setShowDocumentModal(false)}
                 className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
               >
                 <X className="h-5 w-5" />
@@ -1142,62 +1381,110 @@ const Teams: React.FC = () => {
             </div>
             
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">สรุปเอกสาร</h4>
-                  <p className="text-gray-700 leading-relaxed">{selectedDocument.summary}</p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">ประเภท:</span>
-                    <span className="ml-2 font-medium">{getDocumentTypeLabel(selectedDocument.type)}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">สิทธิ์:</span>
-                    <span className="ml-2 font-medium">
-                      {selectedDocument.accessLevel === 'edit' ? 'แก้ไขได้' :
-                       selectedDocument.accessLevel === 'comment' ? 'แสดงความคิดเห็นได้' : 'ดูได้อย่างเดียว'}
+              <div className="space-y-6">
+                {/* Document Info */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm text-gray-600">สถานะ</p>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getDocumentStatusColor(selectedDocument.status)}`}>
+                      {getDocumentStatusLabel(selectedDocument.status)}
                     </span>
                   </div>
-                  <div>
-                    <span className="text-gray-600">ดู:</span>
-                    <span className="ml-2 font-medium">{selectedDocument.viewCount} ครั้ง</span>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm text-gray-600">ผู้ร่วมงาน</p>
+                    <p className="font-semibold text-gray-900">{selectedDocument.collaborators.length} คน</p>
                   </div>
-                  <div>
-                    <span className="text-gray-600">ความคิดเห็น:</span>
-                    <span className="ml-2 font-medium">{selectedDocument.commentCount} ข้อ</span>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm text-gray-600">ความคิดเห็น</p>
+                    <p className="font-semibold text-gray-900">{selectedDocument.comments.length}</p>
                   </div>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">แท็ก</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedDocument.tags.map((tag, index) => (
-                      <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
-                        {tag}
-                      </span>
-                    ))}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm text-gray-600">เวอร์ชัน</p>
+                    <p className="font-semibold text-gray-900">{selectedDocument.versions.length}</p>
                   </div>
                 </div>
+
+                {/* AI Info */}
+                {selectedDocument.aiGenerated && (
+                  <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                    <h4 className="text-sm font-medium text-purple-900 mb-2">ข้อมูล AI</h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-purple-700">AI Model</p>
+                        <p className="font-semibold text-purple-900">{selectedDocument.aiModel}</p>
+                      </div>
+                      <div>
+                        <p className="text-purple-700">ค่าใช้จ่าย</p>
+                        <p className="font-semibold text-purple-900">฿{selectedDocument.aiCost?.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Content */}
+                {selectedDocument.type === 'internal_doc' && selectedDocument.content && (
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900 mb-3">เนื้อหา</h4>
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <pre className="whitespace-pre-wrap text-sm text-gray-700">
+                        {selectedDocument.content}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+
+                {/* Comments */}
+                {selectedDocument.comments.length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900 mb-3">ความคิดเห็น</h4>
+                    <div className="space-y-3">
+                      {selectedDocument.comments.map((comment) => {
+                        const commenter = team.members.find(m => m.id === comment.userId);
+                        return (
+                          <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span className="font-medium text-gray-900">{commenter?.name}</span>
+                              <span className="text-xs text-gray-500">
+                                {comment.timestamp.toLocaleDateString('th-TH')}
+                              </span>
+                              {!comment.resolved && (
+                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                                  รอแก้ไข
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-700">{comment.content}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             
             <div className="border-t border-gray-200 p-6">
               <div className="flex justify-between">
                 <div className="flex space-x-3">
-                  <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    <Eye className="h-4 w-4 mr-2" />
-                    เปิดเอกสาร
-                  </button>
+                  {selectedDocument.url && (
+                    <button
+                      onClick={() => window.open(selectedDocument.url, '_blank')}
+                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      เปิดเอกสาร
+                    </button>
+                  )}
                   <button className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    แสดงความคิดเห็น
+                    <Share2 className="h-4 w-4 mr-2" />
+                    แชร์
                   </button>
                 </div>
-                <button className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  แชร์
+                <button
+                  onClick={() => setShowDocumentModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  ปิด
                 </button>
               </div>
             </div>
