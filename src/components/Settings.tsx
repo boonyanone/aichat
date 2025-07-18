@@ -48,7 +48,7 @@ import {
   Image, 
   Camera, 
   Mic, 
-  MoreHorizontal
+  MoreHorizontal,
   MicOff, 
   Headphones, 
   Speaker, 
