@@ -6,6 +6,7 @@ import ChatAI from './components/ChatAI';
 import Meetings from './components/Meetings';
 import Documents from './components/Documents';
 import Teams from './components/Teams';
+import Settings from './components/Settings';
 import LandingPage from './components/LandingPage';
 
 function App() {
@@ -88,10 +89,7 @@ function App() {
             </div>
           )}
           {activeTab === 'settings' && (
-            <div className="p-6">
-              <h1 className="text-2xl font-bold text-gray-900">ตั้งค่า</h1>
-              <p className="text-gray-600 mt-2">ฟีเจอร์ตั้งค่าระบบกำลังพัฒนา...</p>
-            </div>
+            <Settings />
           )}
         </main>
       </div>
