@@ -7,6 +7,7 @@ import Meetings from './components/Meetings';
 import Documents from './components/Documents';
 import Teams from './components/Teams';
 import Settings from './components/Settings';
+import AIModels from './components/AIModels';
 import LandingPage from './components/LandingPage';
 
 function App() {
@@ -65,10 +66,7 @@ function App() {
             <Teams />
           )}
           {activeTab === 'ai-models' && (
-            <div className="p-6">
-              <h1 className="text-2xl font-bold text-gray-900">โมเดล AI</h1>
-              <p className="text-gray-600 mt-2">ฟีเจอร์เลือกโมเดล AI กำลังพัฒนา...</p>
-            </div>
+            <AIModels />
           )}
           {activeTab === 'analytics' && (
             <div className="p-6">
