@@ -258,9 +258,7 @@ const ChatAI: React.FC = () => {
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold text-gray-900">Chat AI</h1>
-            </div>
+            <div></div>
             
             <div className="flex items-center space-x-3">
               <button
@@ -270,7 +268,6 @@ const ChatAI: React.FC = () => {
                 }`}
               >
                 <History className="h-5 w-5" />
-              </button>
               <button
                 onClick={startNewChat}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -503,35 +500,20 @@ const ChatAI: React.FC = () => {
         {/* Input Area */}
         <div className="bg-white border-t border-gray-200 p-4">
           <div className="max-w-4xl mx-auto">
-            {/* AI Model Selector - Beautiful Grid */}
+            {/* AI Model Selector - Dropdown */}
             <div className="mb-4">
               <h4 className="text-sm font-medium text-gray-700 mb-3">เลือก AI Model:</h4>
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                {aiModels.map(model => {
-                  const Logo = model.logo;
-                  return (
-                    <button
-                      key={model.id}
-                      onClick={() => setSelectedAI(model.id)}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 hover:shadow-lg ${
-                        selectedAI === model.id
-                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-lg'
-                          : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700 hover:bg-blue-50 shadow-sm'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center text-center">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="text-lg">{model.icon}</span>
-                          <Logo className="h-4 w-4" />
-                        </div>
-                        <div className="text-sm font-semibold mb-1">{model.name}</div>
-                        <div className="text-xs text-gray-500 mb-1">{model.cost}</div>
-                        <div className="text-xs text-gray-400 leading-tight">{model.bestFor}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <select 
+                value={selectedAI}
+                onChange={(e) => setSelectedAI(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              >
+                {aiModels.map(model => (
+                  <option key={model.id} value={model.id}>
+                    {model.icon} {model.name} - {model.cost} - {model.bestFor}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Input */}
