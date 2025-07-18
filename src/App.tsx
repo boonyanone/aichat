@@ -8,6 +8,7 @@ import Documents from './components/Documents';
 import Teams from './components/Teams';
 import Settings from './components/Settings';
 import AIModels from './components/AIModels';
+import Analytics from './components/Analytics';
 import LandingPage from './components/LandingPage';
 
 function App() {
@@ -68,12 +69,7 @@ function App() {
           {activeTab === 'ai-models' && (
             <AIModels />
           )}
-          {activeTab === 'analytics' && (
-            <div className="p-6">
-              <h1 className="text-2xl font-bold text-gray-900">รายงาน</h1>
-              <p className="text-gray-600 mt-2">ฟีเจอร์รายงานการใช้งานกำลังพัฒนา...</p>
-            </div>
-          )}
+          {activeTab === 'analytics' && <Analytics />}
           {activeTab === 'compliance' && (
             <div className="p-6">
               <h1 className="text-2xl font-bold text-gray-900">ตรวจสอบ</h1>
