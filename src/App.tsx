@@ -12,6 +12,7 @@ import Analytics from './components/Analytics';
 import Compliance from './components/Compliance';
 import Templates from './components/Templates';
 import LandingPage from './components/LandingPage';
+import TeamChat from './components/TeamChat';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -59,6 +60,7 @@ function App() {
         <main className="flex-1 overflow-y-auto bg-gray-50">
           {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'chat' && <ChatAI />}
+          {activeTab === 'team-chat' && <TeamChat />}
           {activeTab === 'documents' && (
             <Documents />
           )}
