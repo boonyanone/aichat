@@ -23,7 +23,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeTab, onTabChange }) => 
   const menuItems = [
     { id: 'dashboard', label: 'แดชบอร์ด', icon: Home },
     { id: 'chat', label: 'Chat AI', icon: MessageSquare },
-    { id: 'team-chat', label: 'Team Chat', icon: Users },
     { id: 'documents', label: 'เอกสาร', icon: FileText },
     { id: 'meetings', label: 'ประชุม', icon: Video },
     { id: 'teams', label: 'ทีม', icon: Users },

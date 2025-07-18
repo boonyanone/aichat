@@ -30,7 +30,6 @@ import {
 
 const Dashboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState('7d');
-  const [selectedMetric, setSelectedMetric] = useState<'requests' | 'costs' | 'users'>('requests');
 
   const stats = [
     { 
