@@ -268,6 +268,7 @@ const ChatAI: React.FC = () => {
                 }`}
               >
                 <History className="h-5 w-5" />
+              </button>
               <button
                 onClick={startNewChat}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -285,23 +286,23 @@ const ChatAI: React.FC = () => {
             <div className="max-w-4xl mx-auto">
               {/* Persona Selection */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">คุณคือใคร?</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">คุณคือใคร?</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                   {personas.map(persona => {
                     const Icon = persona.icon;
                     return (
                       <button
                         key={persona.id}
                         onClick={() => setSelectedPersona(persona.id)}
-                        className={`p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 hover:shadow-lg ${
+                        className={`p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 hover:shadow-md ${
                           selectedPersona === persona.id
-                            ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-lg'
+                            ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
                             : 'border-gray-200 bg-white hover:border-blue-300 text-gray-700 hover:bg-blue-50 shadow-sm'
                         }`}
                       >
                         <div className="text-center">
-                          <Icon className="h-8 w-8 mx-auto mb-2 text-current" />
-                          <div className="text-sm font-medium mb-1">{persona.label}</div>
+                          <Icon className="h-6 w-6 mx-auto mb-2 text-current" />
+                          <div className="text-xs font-medium mb-1">{persona.label}</div>
                           <div className="text-xs text-gray-500 leading-tight">{persona.description}</div>
                         </div>
                       </button>
@@ -321,7 +322,7 @@ const ChatAI: React.FC = () => {
                       <button
                         key={index}
                         onClick={() => handleTemplateClick(template)}
-                        className="p-4 text-left bg-white border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 text-gray-700 hover:text-blue-700 shadow-sm hover:shadow-lg group"
+                        className="p-4 text-left bg-white border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 text-gray-700 hover:text-blue-700 shadow-sm hover:shadow-md group"
                       >
                         <div className="flex items-start space-x-3">
                           <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors">
